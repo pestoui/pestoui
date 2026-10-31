@@ -1,0 +1,15 @@
+#!/bin/sh
+# One identity (CONTRIBUTING.md, "Identity and naming"): the only co-author
+# trailer a commit may carry is Claude's, and no message carries a
+# "generated with" line. Turn this on once per clone with:
+# git config core.hooksPath .githooks
+if grep -iE '^co-authored-by:' "$1" |
+  grep -qviE '^co-authored-by: claude( [a-z0-9. ]+)? <noreply@anthropic\.com>[[:space:]]*$'; then
+  echo "commit-msg: the only co-author allowed is Claude <noreply@anthropic.com>." >&2
+  echo "This project commits under one identity (CONTRIBUTING.md)." >&2
+  exit 1
+fi
+if grep -qiE '^generated with' "$1"; then
+  echo "commit-msg: remove the 'generated with' line." >&2
+  exit 1
+fi

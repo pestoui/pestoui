@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  /* The tests run under `node --test` with Node's own type stripping, outside
+     the package's src/ (so they are neither published nor scanned by
+     Tailwind). This config is what typechecks them: `npm run typecheck`. */
+  "compilerOptions": {
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": ["."]
+}

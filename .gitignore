@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+*.local
+*.tsbuildinfo
+
+# Local environment, keys and hosting links. Secrets live in the host's
+# encrypted settings, never in the repository.
+.env
+.env.*
+!.env.example
+.vercel
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Private blocklist read by scripts/check-names.mjs. It exists so that certain
+# words never enter the repository; tracking it would defeat the purpose.
+.forbidden-names
+
+# Release body, extracted from packages/ui/CHANGELOG.md by scripts/check-release.mjs.
+# Regenerated on every tag; never tracked.
+.release-notes.md
+
+# The tarball and notes release.yml packs for its publish job. CI-only.
+release/

@@ -1,0 +1,605 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./styles/shadcn.css";
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource-variable/geist-mono/wght.css";
+@import "./styles/motion.css";
+
+/* Tailwind's automatic content detection is rooted at the consuming app and
+   never walks into node_modules, so a package that ships source has to name its
+   own files or every utility a component uses is pruned from the build. Paths
+   resolve relative to this stylesheet, which is what makes them survive being
+   imported from an app three directories away — or from an installed copy. */
+@source "./components";
+@source "./hooks";
+@source "./lib";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-destructive-ink: var(--destructive-ink);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+    --color-info-ink: var(--info-ink);
+    --color-selected: var(--selected);
+    --color-selected-foreground: var(--selected-foreground);
+    --color-switch-track: var(--switch-track);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-success-ink: var(--success-ink);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning-ink: var(--warning-ink);
+    --color-paper: var(--paper);
+    --color-paper-foreground: var(--paper-foreground);
+    --color-inverse: var(--inverse);
+    --color-inverse-foreground: var(--inverse-foreground);
+    --color-inverse-muted: var(--inverse-muted);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* Squircle ramp — FIXED SQUARE boxes only, named by edge in px.
+       The scale above is multiplicative off --radius, so its smallest step is
+       9.6px: on a 24px tile that is a ratio of 0.40, and on a 16px one 0.60 —
+       which is why small squares kept collapsing into circles. These are
+       literal rather than derived, because the ratio a square needs does not
+       scale with the brand radius knob.
+
+       r ≈ 0.30 × edge, the ratio extracted from the eight radii hardcoded
+       across button/checkbox/icon-tile. The 28 and 32 steps match the
+       rounded-[9px] and rounded-[10px] already living in app-sidebar.tsx and
+       sidebar.tsx, so those escapes now have a token to move to.
+
+       Never put these on a container that grows: past half the edge a radius
+       collapses the shape into a circle, which is the failure this ramp
+       exists to prevent. Growing containers keep the surface scale above. */
+    --radius-box-16: 0.3rem; /* 4.8px */
+    --radius-box-20: 0.375rem; /* 6px */
+    --radius-box-24: 0.4375rem; /* 7px */
+    --radius-box-28: 0.5625rem; /* 9px */
+    --radius-box-32: 0.625rem; /* 10px */
+    --radius-box-36: 0.6875rem; /* 11px */
+    --radius-box-40: 0.8125rem; /* 13px */
+    /* 44 and 48 are not monotonic on purpose: 15px comes from button icon-lg
+       and 14px from icon-tile md, both extracted as-built so those hardcoded
+       radii can move onto tokens without shifting a pixel. Ratios 0.341 and
+       0.292 — both inside the ≈0.30 band. Nothing steps through this ramp, you
+       pick the step matching your edge, so the dip costs nothing. */
+    --radius-box-44: 0.9375rem; /* 15px */
+    --radius-box-48: 0.875rem; /* 14px */
+    --radius-box-56: 1rem; /* 16px */
+    --radius-box-64: 1.1875rem; /* 19px */
+    --shadow-hairline: 0 1px 2px oklch(0.216 0.006 56 / 0.04), 0 1px 3px -1px oklch(0.216 0.006 56 / 0.03);
+    /* Soft resting shadow for interactive controls — buttons, inputs, selects,
+       filters. Deliberately gentler than --shadow-soft (no wide blur layer). */
+    --shadow-xs: 0 1px 2px oklch(0.216 0.006 56 / 0.05), 0 2px 4px -1px oklch(0.216 0.006 56 / 0.06);
+    --shadow-soft: 0 1px 3px oklch(0.216 0.006 56 / 0.035), 0 6px 16px -4px oklch(0.216 0.006 56 / 0.05);
+    --shadow-tile: 0 1px 2px oklch(0.216 0.006 56 / 0.05), 0 3px 10px -2px oklch(0.216 0.006 56 / 0.06);
+    --shadow-card: 0 1px 2px oklch(0.216 0.006 56 / 0.03), 0 10px 30px -8px oklch(0.216 0.006 56 / 0.07);
+    --shadow-float: 0 4px 12px oklch(0.216 0.006 56 / 0.06), 0 24px 60px -16px oklch(0.216 0.006 56 / 0.28);
+    /* Dashboard chrome. These three existed as :root tokens but were never
+       registered here, so no bg-surface / border-surface-card-border utility
+       was generated and every consumer fell back to bg-[var(--surface)] or an
+       inline style object. Registering them costs nothing and is what stops
+       the next dashboard re-inventing the same bypass.
+
+       The shadow is the same ink every other --shadow-* token uses. It was
+       previously written inline as rgba(28, 25, 23, 0.05), which resolves
+       byte-identically to oklch(0.216 0.006 56) — verified channel for
+       channel, zero delta — so naming it changes nothing visually and gains
+       the retinting the raw rgba could never do. */
+    --color-surface: var(--surface);
+    --color-surface-card: var(--surface-card);
+    --color-surface-card-border: var(--surface-card-border);
+    --shadow-surface-card: 0 1px 2px 0 oklch(0.216 0.006 56 / 0.05);
+}
+
+/* Type scale, Tier 1. Plain @theme, not inline, so each size stays a real
+   custom property that a later theme or density mode can re-value.
+
+   Tier 1 is SIZE-ONLY and must never gain a companion: no --text-*--line-height,
+   --letter-spacing or --font-weight. These replace arbitrary size classes that
+   set font-size alone, and Tailwind emits a line-height for a size utility only
+   when its --line-height companion exists, so adding one would silently move
+   layout at every call site. tokens:check fails on a companion.
+
+   Every name here must also be registered in src/lib/utils.ts
+   (typeScaleMergeConfig), or tailwind-merge treats text-<name> as a colour. */
+@theme {
+    --text-micro: 0.6875rem; /* 11px */
+    --text-caption-sm: 0.75rem; /* 12px */
+    --text-caption: 0.8125rem; /* 13px */
+    --text-body-sm: 0.875rem; /* 14px */
+    --text-body: 0.9375rem; /* 15px */
+    --text-body-md: 1rem; /* 16px */
+    --text-body-lg: 1.0625rem; /* 17px */
+    --text-lead: 1.125rem; /* 18px */
+
+    /* Not --tracking-tighter: stock Tailwind defines that as -0.05em, and this
+       stylesheet is published, so redefining it would change every consumer's
+       tracking-tighter. */
+    --tracking-snug: -0.01em;
+    --tracking-title: -0.02em;
+}
+
+:root {
+    /* Body tracking, read only by the base-layer body rule. Deliberately not in
+       @theme, so no utility exists for it. letter-spacing resolves an em against
+       the font-size of the element that sets it, then inherits as a px length:
+       body sets it at 16px, so text inherits -0.176px (16px x -0.011). The same
+       value as a utility on a 15px element would compute -0.165px. The variable
+       itself stays unresolved (it is an unregistered custom property), so read
+       it only from the body rule. */
+    --tracking-body: -0.011em;
+
+    /* Brand hue — every neutral references this, so the whole greyscale takes a
+       subtle brand undertone. Themes below re-point it to match their accent. */
+    --brand-hue: 121;
+
+    /* Surfaces */
+    --background: oklch(0.9691 0.0038 var(--brand-hue));      /* #F5F4F0 warm paper gray */
+    --foreground: oklch(0.2404 0.0055 var(--brand-hue));       /* #232019 warm near-black */
+    --card: oklch(1 0 0);                          /* #FFFFFF */
+    --card-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --paper: oklch(0.945 0.0088 var(--brand-hue));               /* #F0EDE3 cream document canvas */
+    --paper-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --inverse: oklch(0.2686 0.0072 var(--brand-hue));            /* #2B2823 dark promo surface */
+    --inverse-foreground: oklch(0.9851 0.0015 var(--brand-hue));
+    --inverse-muted: oklch(0.715 0.0088 var(--brand-hue));       /* #A9A49B */
+
+    /* Dashboard surfaces — light values are the exact requested hex; dark below */
+    --surface: #F9FAF7;
+    --surface-card: #FEFFFC;
+    --surface-card-border: #EFF0ED;
+
+    /* Interactive */
+    --primary: oklch(0.9192 0.2125 120.78);      /* lime brand / CTA — #D1F826 */
+    --primary-foreground: oklch(0.3241 0.0723 125.5);   /* deep-olive ink on lime — #2B3A0A */
+    --secondary: oklch(0.9542 0.0042 var(--brand-hue));        /* #F1F0EB quiet fill */
+    --secondary-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --muted: oklch(0.9542 0.0042 var(--brand-hue));
+    /* Secondary text. L is pinned by WCAG AA, not by taste: at the previous
+       0.6118 this measured 3.73:1 on white and 3.26:1 on --secondary, so every
+       caption, table cell and helper line in the system failed 1.4.3 for normal
+       text. 0.515 is the lightest step that clears 4.5:1 on all five light
+       surfaces it lands on — card/sidebar white, --background, --secondary,
+       --accent (the row hover fill) and --paper — across all five accent hues.
+       Worst case is 4.78:1 on --paper; on white it is 5.64:1.
+
+       Left as light as the rule allows, deliberately. The token exists to carry
+       hierarchy, and --foreground/70 (6.0:1) flattens more of it than AA asks
+       for. Dark mode needs no change: 0.715 already clears 5.5:1 everywhere. */
+    --muted-foreground: oklch(0.515 0.0099 var(--brand-hue)); /* #666862 secondary text */
+    --accent: oklch(0.9463 0.0048 var(--brand-hue));           /* hover fill */
+    --accent-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --border: oklch(0.9319 0.0052 var(--brand-hue));           /* #EAE8E2 hairline */
+    --input: oklch(0.9319 0.0052 var(--brand-hue));
+    /* The OFF track of a toggle. A filled area carrying a white knob, which is
+       not the job --input does (a hairline around a field), and the numbers
+       say so: white on this measures 1.41:1, on --input only 1.22:1, and
+       against --background the track itself reads 1.29:1 where --input reads
+       1.11:1. Reusing --input would leave both edges of the control — knob
+       against track, and track against page — near the limit of visible.
+
+       Two departures from the neutrals above, both carried over verbatim from
+       the literal this replaces (switch.tsx had it inline as
+       oklch(0.885 0.006 95)) so no pixel moves: L 0.885 is darker than the
+       0.9319 the border/input pair sits at, and the hue is a literal 95 rather
+       than var(--brand-hue). No .theme-* block restates it either, so the OFF
+       state comes out identical under all four accents — measured: the
+       unchecked track computes to the same colour in blue, orange, violet and
+       green. An off state is the absence of the accent, not a wash of it.
+
+       Light only, on purpose. Dark keeps its own rule
+       (`dark:data-unchecked:bg-input/80` in switch.tsx) because there the
+       track is a translucent white wash over the card rather than a solid —
+       an alpha of an existing token, not a second value of this one. */
+    --switch-track: oklch(0.885 0.006 95);
+    /* Focus follows the brand accent, not --info. Every .theme-* block below
+       already retints its ring to its own accent; pointing the default at
+       --selected makes the base theme behave like the rest instead of being
+       the one that stays blue. --info stays reserved for informational UI. */
+    --ring: var(--selected);
+
+    /* Semantic */
+    --info: oklch(0.623 0.188 259.8);             /* #3B82F6 informational — alerts, badges, links */
+    --info-foreground: oklch(1 0 0);
+    /* Brand accent for interactive state — checked checkbox, radio, switch,
+       slider, progress, active step, selected row, focus ring. One token, used
+       for both the fill and anything ink-shaped, with white sitting on it.
+
+       Deliberately darker than --primary. The lime is a CTA surface: at L 0.92
+       it cannot hold a white glyph, and a 2px indicator drawn in it disappears.
+       This tone is the same family pulled down until it can do both jobs — L 0.62 is
+       the lightest it goes while a white tick on the fill, a 2px accent on white
+       and a progress bar against its track all still clear 3:1. */
+    --selected: oklch(0.62 0.17 var(--brand-hue));  /* #789400 */
+    --selected-foreground: oklch(1 0 0);
+    --success: oklch(0.6271 0.1699 149.2);         /* #16A34A */
+    --success-foreground: oklch(1 0 0);
+    --warning: oklch(0.7686 0.1647 70.08);         /* #F59E0B */
+    --warning-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    /* Ink for a WARNING TINT, as distinct from --warning-foreground which is the
+       ink for the solid --warning fill (alert.tsx:30). They agree in light and
+       must not in dark: bg-warning/15 over a dark card is #3F331A, and the near-
+       black --warning-foreground reads 1.13-1.44:1 on it — the text is gone, not
+       dim. Lifting to the fill colour itself clears 4.95:1 at worst.
+
+       badge/tag/status-badge had been hand-patching this with `dark:text-warning`
+       in three files; this is that patch, tokenised, so the two that never got it
+       stop being wrong. Light is unchanged everywhere. */
+    --warning-ink: oklch(0.2404 0.0055 var(--brand-hue));
+    --destructive: oklch(0.5771 0.2152 27.33);     /* #DC2626 */
+
+    /* The three tones above each double as a fill and as ink, and one value
+       cannot do both: --success at 10% of itself is #E7F6EA, and #16A34A on
+       that is 2.94:1. Same shape for --destructive (4.11:1) and --info (3.28:1).
+
+       So the pair splits. --<tone> is the FILL — solid backgrounds, tints,
+       dots, bars, icons. --<tone>-ink is the same hue and chroma pulled down
+       until it clears 4.5:1 as TEXT on every surface the system can put it on,
+       including a 5-20% wash of its own fill and the --paper canvas, which is
+       the darkest of the light surfaces and therefore the binding case.
+       --warning already worked this way (its ink is --warning-foreground),
+       which is why the warning badge was the one variant that passed.
+
+       Worst case light: success 4.58:1, destructive 4.56:1, info 4.65:1. */
+    --success-ink: oklch(0.48 0.1699 149.2);      /* #00751B */
+    --destructive-ink: oklch(0.465 0.2152 27.33); /* #B30000 */
+    --info-ink: oklch(0.495 0.188 259.8);         /* #0E59CA */
+
+    /* Identity / charts */
+    --chart-1: oklch(0.6056 0.2189 292.7);         /* violet  #8B5CF6 */
+    --chart-2: oklch(0.7176 0.1767 349.8);         /* pink    #F472B6 */
+    --chart-3: oklch(0.7505 0.1791 55.9);          /* orange  #FB923C */
+    --chart-4: oklch(0.7137 0.1434 254.6);         /* blue    #60A5FA */
+    --chart-5: oklch(0.777 0.1521 181.9);          /* teal    #2DD4BF */
+
+    --radius: 1rem;
+
+    /* Sidebar (white card on warm background) */
+    --sidebar: oklch(1 0 0);
+    --sidebar-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --sidebar-primary: oklch(0.9192 0.2125 120.78);
+    --sidebar-primary-foreground: oklch(0.3241 0.0723 125.5);
+    --sidebar-accent: oklch(0.9542 0.0042 var(--brand-hue));
+    --sidebar-accent-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --sidebar-border: oklch(0.9319 0.0052 var(--brand-hue));
+    --sidebar-ring: var(--selected);
+
+    /* Code syntax — a calibrated light palette.
+       Kept as literal hex on purpose: these are a published, calibrated set,
+       and shifting them onto the warm ramp muddies the hue separation that
+       makes code scannable. The block's chrome below stays on system tokens. */
+    --code-text: #24292e;      /* plain identifiers */
+    --code-punc: #24292e;      /* braces, commas, operators */
+    --code-comment: #6a737d;   /* comments */
+    --code-kw: #d73a49;        /* import / const / return / from */
+    --code-comp: #6f42c1;      /* Component identifiers */
+    --code-fn: #6f42c1;        /* call sites */
+    --code-attr: #6f42c1;      /* JSX attribute names */
+    --code-tag: #22863a;       /* lowercase JSX element tags */
+    --code-key: #005cc5;       /* JSON property keys */
+    --code-num: #005cc5;       /* numeric literals */
+    --code-str: #032f62;       /* string literals */
+    --code-gutter: #b6bac0;    /* line-number gutter */
+}
+
+.dark {
+    --background: oklch(0.1822 0.004 var(--brand-hue));
+    --foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --card: oklch(0.2404 0.0055 var(--brand-hue));
+    --card-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --popover: oklch(0.2404 0.0055 var(--brand-hue));
+    --popover-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --paper: oklch(0.2404 0.008 var(--brand-hue));
+    --paper-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --inverse: oklch(0.9702 0.0027 var(--brand-hue));
+    --inverse-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --inverse-muted: oklch(0.6118 0.0099 var(--brand-hue));
+    --surface: oklch(0.205 0.004 var(--brand-hue));
+    --surface-card: oklch(0.248 0.005 var(--brand-hue));
+    --surface-card-border: oklch(1 0 0 / 8%);
+    --primary: oklch(0.9192 0.2125 120.78);
+    --primary-foreground: oklch(0.3241 0.0723 125.5);
+    --secondary: oklch(0.2686 0.0072 var(--brand-hue));
+    --secondary-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --muted: oklch(0.2686 0.0072 var(--brand-hue));
+    --muted-foreground: oklch(0.715 0.0088 var(--brand-hue));
+    --accent: oklch(0.2904 0.0072 var(--brand-hue));
+    --accent-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 12%);
+    --ring: var(--selected);
+    --info: oklch(0.623 0.188 259.8);
+    --info-foreground: oklch(1 0 0);
+    /* Nudged a touch lighter than the light theme, so the accent keeps the
+       same presence against a dark canvas that it has against a pale one. */
+    --selected: oklch(0.64 0.17 var(--brand-hue));
+    --selected-foreground: oklch(1 0 0);
+    --success: oklch(0.6271 0.1699 149.2);
+    --success-foreground: oklch(1 0 0);
+    --warning: oklch(0.7686 0.1647 70.08);
+    --warning-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --warning-ink: oklch(0.7686 0.1647 70.08);
+    --destructive: oklch(0.704 0.1911 22.2);
+    /* Dark inverts the direction: the ink lifts above the fill instead of
+       dropping below it. Binding case is a tint on --accent, the lightest
+       dark surface. Worst: success 4.61:1, destructive 4.57:1, info 4.63:1. */
+    --success-ink: oklch(0.68 0.1699 149.2);      /* #33B45A */
+    --destructive-ink: oklch(0.81 0.1911 22.2);   /* #FF8787 */
+    --info-ink: oklch(0.73 0.188 259.8);          /* #5CA5FF */
+    --chart-1: oklch(0.6056 0.2189 292.7);
+    --chart-2: oklch(0.7176 0.1767 349.8);
+    --chart-3: oklch(0.7505 0.1791 55.9);
+    --chart-4: oklch(0.7137 0.1434 254.6);
+    --chart-5: oklch(0.777 0.1521 181.9);
+    --sidebar: oklch(0.2404 0.0055 var(--brand-hue));
+    --sidebar-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --sidebar-primary: oklch(0.9192 0.2125 120.78);
+    --sidebar-primary-foreground: oklch(0.3241 0.0723 125.5);
+    --sidebar-accent: oklch(0.2686 0.0072 var(--brand-hue));
+    --sidebar-accent-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: var(--selected);
+}
+
+/* Accent themes — retint the action + selected color together (--primary AND
+   --selected), plus the focus ring. --info stays a fixed informational blue.
+   Put a .theme-* class on any ancestor and its descendants follow: buttons,
+   selected states, progress, the running badge, focus rings, the runs chart.
+
+   Each block restates --selected outright rather than leaning on --brand-hue.
+   A custom property has its var() references substituted at computed-value
+   time on the element the declaration lands on: :root resolves --selected
+   against :root's hue and descendants inherit that already-resolved colour, so
+   overriding --brand-hue here cannot reach back and re-resolve it. (The same
+   rule is why --primary-foreground is repeated in each block despite matching
+   :root verbatim.) */
+.theme-blue {
+    --brand-hue: 255;
+    --primary: oklch(0.55 0.15 255);
+    --primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --selected: oklch(0.55 0.15 255);
+    --selected-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --ring: oklch(0.55 0.15 255);
+    --sidebar-primary: oklch(0.55 0.15 255);
+    --sidebar-primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --sidebar-ring: oklch(0.55 0.15 255);
+}
+/* --primary is one step darker than --selected/--ring here, and in .theme-green
+   below, because it is the only one of them that carries text. Both themes had
+   all five accent slots on a single literal, and --primary-foreground is white:
+   that read 3.15:1 on orange and 3.56:1 on green, so every default Button in
+   those two themes failed 1.4.3 — on this gallery and on #/dashboard alike.
+
+   Splitting them is what the base theme already does, and documents beside
+   --selected: a CTA fill and an interactive accent are different jobs with
+   different bars — 4.5:1 for a label, 3:1 for a tick or a ring. --selected,
+   --ring and --sidebar-ring keep the original value; they are non-text and
+   clear 3:1 (white on orange 3.15, on green 3.56). */
+.theme-orange {
+    --brand-hue: 50;
+    --primary: oklch(0.565 0.15 50);
+    --primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --selected: oklch(0.66 0.15 50);
+    --selected-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --ring: oklch(0.66 0.15 50);
+    --sidebar-primary: oklch(0.565 0.15 50);
+    --sidebar-primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --sidebar-ring: oklch(0.66 0.15 50);
+}
+.theme-violet {
+    --brand-hue: 293;
+    --primary: oklch(0.53 0.18 293);
+    --primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --selected: oklch(0.53 0.18 293);
+    --selected-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --ring: oklch(0.53 0.18 293);
+    --sidebar-primary: oklch(0.53 0.18 293);
+    --sidebar-primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --sidebar-ring: oklch(0.53 0.18 293);
+}
+.theme-green {
+    --brand-hue: 152;
+    --primary: oklch(0.535 0.14 152);
+    --primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --selected: oklch(0.6 0.14 152);
+    --selected-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --ring: oklch(0.6 0.14 152);
+    --sidebar-primary: oklch(0.535 0.14 152);
+    --sidebar-primary-foreground: oklch(0.985 0.001 var(--brand-hue));
+    --sidebar-ring: oklch(0.6 0.14 152);
+}
+
+/* Neutral undertone follows the active theme — re-declared in each theme scope so
+   their var(--brand-hue) recomputes with that theme's hue (light + dark). */
+.theme-blue, .theme-orange, .theme-violet, .theme-green {
+    --background: oklch(0.9691 0.0038 var(--brand-hue));
+    --foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --card-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --popover-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --paper: oklch(0.945 0.0088 var(--brand-hue));
+    --paper-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --inverse: oklch(0.2686 0.0072 var(--brand-hue));
+    --inverse-foreground: oklch(0.9851 0.0015 var(--brand-hue));
+    --inverse-muted: oklch(0.715 0.0088 var(--brand-hue));
+    --secondary: oklch(0.9542 0.0042 var(--brand-hue));
+    --secondary-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --muted: oklch(0.9542 0.0042 var(--brand-hue));
+    --muted-foreground: oklch(0.515 0.0099 var(--brand-hue)); /* AA, see :root */
+    --accent: oklch(0.9463 0.0048 var(--brand-hue));
+    --accent-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --border: oklch(0.9319 0.0052 var(--brand-hue));
+    --input: oklch(0.9319 0.0052 var(--brand-hue));
+    --warning-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --warning-ink: oklch(0.2404 0.0055 var(--brand-hue));
+    --sidebar-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --sidebar-accent: oklch(0.9542 0.0042 var(--brand-hue));
+    --sidebar-accent-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --sidebar-border: oklch(0.9319 0.0052 var(--brand-hue));
+}
+.dark .theme-blue, .dark .theme-orange, .dark .theme-violet, .dark .theme-green {
+    --background: oklch(0.1822 0.004 var(--brand-hue));
+    --foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --card: oklch(0.2404 0.0055 var(--brand-hue));
+    --card-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --popover: oklch(0.2404 0.0055 var(--brand-hue));
+    --popover-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --paper: oklch(0.2404 0.008 var(--brand-hue));
+    --paper-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --inverse: oklch(0.9702 0.0027 var(--brand-hue));
+    --inverse-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --inverse-muted: oklch(0.6118 0.0099 var(--brand-hue));
+    --surface: oklch(0.205 0.004 var(--brand-hue));
+    --surface-card: oklch(0.248 0.005 var(--brand-hue));
+    --secondary: oklch(0.2686 0.0072 var(--brand-hue));
+    --secondary-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --muted: oklch(0.2686 0.0072 var(--brand-hue));
+    --muted-foreground: oklch(0.715 0.0088 var(--brand-hue));
+    --accent: oklch(0.2904 0.0072 var(--brand-hue));
+    --accent-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --warning-foreground: oklch(0.2404 0.0055 var(--brand-hue));
+    --warning-ink: oklch(0.7686 0.1647 70.08);
+    --sidebar: oklch(0.2404 0.0055 var(--brand-hue));
+    --sidebar-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    --sidebar-accent: oklch(0.2686 0.0072 var(--brand-hue));
+    --sidebar-accent-foreground: oklch(0.9702 0.0027 var(--brand-hue));
+    /* Edges are translucent white in dark mode, not a solid light hairline.
+       These three have to be restated here even though .dark above already
+       declares them: the light .theme-* block is a later rule at equal
+       specificity (0,1,0), so without this it wins in dark mode too and every
+       border, input outline and sidebar divider renders as a near-white
+       L 0.93 line on a near-black surface. Only visible with a non-default
+       accent selected, which is why it survived this long. */
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 12%);
+    --sidebar-border: oklch(1 0 0 / 10%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    letter-spacing: var(--tracking-body);
+    -webkit-font-smoothing: antialiased;
+    }
+  html {
+    @apply font-sans;
+    }
+}
+
+@layer utilities {
+  /* Thin, quiet scrollbar for docs rails — the native one is far too heavy and
+     its stepper arrows break the layout rhythm. Track stays transparent so the
+     surface colour shows through; the thumb only darkens on hover. */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    /* Chromium honours scrollbar-width/-color and ignores the ::-webkit rules
+       below, so both paths must resolve to the same tone. */
+    scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent)
+      transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--foreground) 14%, transparent);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--foreground) 26%, transparent);
+  }
+  /* Kill the stepper arrows and the dead corner square */
+  .scrollbar-thin::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .scrollbar-thin::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Pastel cover gradients — soft mesh built from stacked radial gradients */
+@layer utilities {
+  .gradient-sky {
+    background-color: #afc8f3;
+    background-image:
+      radial-gradient(90% 110% at 12% 96%, #b7a2f2 0%, transparent 58%),
+      radial-gradient(120% 100% at 18% 4%, #82aaee 0%, transparent 55%),
+      radial-gradient(110% 130% at 92% 18%, #a6cdf7 0%, transparent 62%),
+      radial-gradient(85% 85% at 62% 72%, #dcebfc 0%, transparent 58%);
+  }
+  .gradient-sunrise {
+    background-color: #f5bd6a;
+    background-image:
+      radial-gradient(95% 110% at 10% 88%, #f2a0b4 0%, transparent 60%),
+      radial-gradient(100% 100% at 88% 10%, #f7d468 0%, transparent 58%),
+      radial-gradient(90% 90% at 82% 88%, #f6b34f 0%, transparent 55%),
+      radial-gradient(70% 80% at 42% 34%, #fbe1b8 0%, transparent 55%);
+  }
+  .gradient-blossom {
+    background-color: #f2aed4;
+    background-image:
+      radial-gradient(95% 100% at 14% 10%, #f7c8e3 0%, transparent 58%),
+      radial-gradient(100% 110% at 88% 86%, #ec8ec4 0%, transparent 60%),
+      radial-gradient(80% 90% at 78% 18%, #d9b1f0 0%, transparent 55%),
+      radial-gradient(70% 80% at 40% 78%, #fadef0 0%, transparent 55%);
+  }
+  .gradient-meadow {
+    background-color: #55b98d;
+    background-image:
+      radial-gradient(100% 120% at 12% 90%, #2f9e70 0%, transparent 60%),
+      radial-gradient(95% 100% at 88% 12%, #93d7b6 0%, transparent 58%),
+      radial-gradient(85% 95% at 84% 84%, #48c19d 0%, transparent 55%),
+      radial-gradient(70% 80% at 46% 40%, #bae6d0 0%, transparent 52%);
+  }
+}

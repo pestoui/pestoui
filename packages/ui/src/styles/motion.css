@@ -1,0 +1,988 @@
+/* ============================================================================
+   Motion tokens
+   ============================================================================
+
+   The vocabulary every animated component keys off. Nothing here animates
+   anything on its own — a token is invisible until a component consumes it,
+   which is the point: this file lands with zero visual change and turns the
+   motion work into naming rather than hand-typed numbers.
+
+   ---------------------------------------------------------------------------
+   Two families, and the distinction is load-bearing
+   ---------------------------------------------------------------------------
+
+   - **Bezier** (`--ease-*`) for anything that travels one way and stops:
+     fades, colour, blur, scrim, sweeps. Monotonic, no overshoot.
+   - **Spring** (`--ease-spring-*`) for anything that should read as having
+     mass: knobs, indicators, panels, press feedback, content swaps.
+
+   The springs are `linear()` curves sampled from a real damped-spring solve
+   (m·x″ + c·x′ + k·x = 0), not eyeballed beziers. This matters: a cubic-bezier
+   can overshoot at most once, so it cannot express the settle wobble that makes
+   a spring read as physical. `linear()` can, and costs zero runtime.
+
+   Each is annotated with its damping ratio (ζ) and peak overshoot so the choice
+   is legible — ζ<1 oscillates, ζ≈1 is critically damped, ζ>1 never overshoots.
+
+   ---------------------------------------------------------------------------
+   Three rules that decide most of the work
+   ---------------------------------------------------------------------------
+
+   1. **Enter on a spring, exit on a short tween.** Springs make arrival feel
+      physical; on exit they read as floaty and slow. Exits use `--ease-out-expo`
+      at `--duration-exit`.
+   2. **Exits travel shorter than enters.** If a panel enters from 8px away, it
+      leaves toward ~5px, not 8. Dismissal should feel decisive, not rewound.
+   3. **Blur is an enter-only materialise cue**, always paired with movement,
+      always resolving to 0, and always lower on exit than enter. Never
+      decoration — 3–4px on small controls, 6px on chrome, 10–12px on large text.
+
+   ---------------------------------------------------------------------------
+   Pairing durations
+   ---------------------------------------------------------------------------
+
+   A spring easing run at the wrong duration stops mid-oscillation and looks
+   broken. Every `--ease-spring-x` has a matching `--duration-spring-x`; use the
+   pair. Durations are measured to perceptual completion (within 0.5% of target),
+   not mathematical settle, which would price in a long invisible tail.
+*/
+
+@theme {
+  /* --- Bezier — one-way travel ------------------------------------------ */
+
+  /* The workhorse. Immediate response, long quiet settle. Default for exits,
+     fades, blur resolves, and anything that should get out of the way. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Symmetric accelerate/decelerate. For loops, sweeps, shimmer — motion with
+     no start or end, where an ease-out would read as stuttering on repeat. */
+  --ease-in-out-circ: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Sheet travel. Very slow off the mark then decisive — the curve that makes
+     a large surface feel heavy without feeling slow. Sheets, drawers. */
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Quart family — gentler alternatives when expo is too aggressive. */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1); /* enter */
+  --ease-in-quart: cubic-bezier(0.5, 0, 0.75, 0); /* exit */
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1); /* move */
+
+  /* The one curve in this family that breaks its "monotonic, no overshoot"
+     rule, and the reason is the keyframe engine rather than taste: a timing
+     function is re-applied to EVERY keyframe interval, so a curve used inside
+     an animation is chosen for the shape it draws across ONE segment, not
+     across a journey. This one peaks 4.08% past its interval's endpoint at 65%
+     of the interval and returns — exactly one overshoot, which is all a
+     cubic-bezier can do, and all that is wanted when the settle is written into
+     the keyframe stops themselves.
+
+     Why no spring substitutes, measured rather than asserted:
+     `--ease-spring-weighted` is the nearest character (single lobe, 4.3%
+     overshoot, peak at 62.5%) and the two agree to within 0.7% of travel after
+     the halfway mark — but they disagree by up to 17.8 points of travel through
+     the first third (0.428 vs 0.250 at 12.5%, which is 2.6px apart on a 14.67px
+     knob), and it is only correct at its own 497ms. See the pairing rule
+     above. */
+  --ease-out-back: cubic-bezier(0.34, 1.35, 0.64, 1);
+
+  /* --- Spring — mass and settle -----------------------------------------
+     Named for their ROLE, not their physics. Reach for the role; the numbers
+     are an implementation detail recorded so they can be re-derived. */
+
+  /* k=500 c=30 m=0.6 | ζ=0.866 | overshoot 0.4% | 170ms
+     Press feedback — every tap/active scale in the system. Fast and weighted,
+     with overshoot too small to see but enough to feel. Lands inside the
+     100–160ms budget where press response stops feeling like lag. */
+  --ease-spring-press: linear(
+    0, 0.0218 4.55%, 0.0765 9.09%, 0.1516 13.64%, 0.2373 18.18%, 0.3268 22.73%,
+    0.4152 27.27%, 0.4993 31.82%, 0.5769 36.36%, 0.6471 40.91%, 0.7092 45.45%,
+    0.7634 50%, 0.8099 54.55%, 0.8493 59.09%, 0.8823 63.64%, 0.9095 68.18%,
+    0.9318 72.73%, 0.9497 77.27%, 0.9639 81.82%, 0.9751 86.36%, 0.9837 90.91%,
+    0.9902 95.45%, 1
+  );
+
+  /* k=360 c=32 m=0.6 | ζ=1.089 | overshoot 0.0% | 364ms
+     Layout glide — an element travelling between two known positions. Slightly
+     overdamped on purpose: an indicator that overshoots its destination reads
+     as imprecise. Selection indicators, sliding highlights, reflow. */
+  --ease-spring-glide: linear(
+    0, 0.0866 5.56%, 0.2505 11.11%, 0.4165 16.67%, 0.5588 22.22%, 0.6721 27.78%,
+    0.7589 33.33%, 0.8239 38.89%, 0.8719 44.44%, 0.9071 50%, 0.9327 55.56%,
+    0.9513 61.11%, 0.9648 66.67%, 0.9746 72.22%, 0.9817 77.78%, 0.9868 83.33%,
+    0.9904 88.89%, 0.9931 94.44%, 1
+  );
+
+  /* k=420 c=40 m=0.5 | ζ=1.380 | overshoot 0.0% | 443ms
+     Panels and overlays. Firmly overdamped — on a surface with real area, any
+     bounce reads as cheap. Dialogs, popovers, drawers, dropdowns. */
+  --ease-spring-panel: linear(
+    0, 0.1403 5.56%, 0.3435 11.11%, 0.5121 16.67%, 0.6399 22.22%, 0.7346 27.78%,
+    0.8046 33.33%, 0.8561 38.89%, 0.894 44.44%, 0.9219 50%, 0.9425 55.56%,
+    0.9577 61.11%, 0.9688 66.67%, 0.977 72.22%, 0.9831 77.78%, 0.9876 83.33%,
+    0.9908 88.89%, 0.9932 94.44%, 1
+  );
+
+  /* k=460 c=30 m=0.55 | ζ=0.943 | overshoot 0.0% | 219ms
+     Content swaps — one label/icon replacing another, and the width change that
+     follows. Quick enough that the swap doesn't draw attention to itself. */
+  --ease-spring-swap: linear(
+    0, 0.0346 4.55%, 0.1161 9.09%, 0.2195 13.64%, 0.3292 18.18%, 0.4355 22.73%,
+    0.5332 27.27%, 0.6195 31.82%, 0.6939 36.36%, 0.7565 40.91%, 0.8084 45.45%,
+    0.8507 50%, 0.8848 54.55%, 0.9119 59.09%, 0.9332 63.64%, 0.9499 68.18%,
+    0.9627 72.73%, 0.9726 77.27%, 0.98 81.82%, 0.9856 86.36%, 0.9898 90.91%,
+    0.9929 95.45%, 1
+  );
+
+  /* k=800 c=80 m=4 | ζ=0.707 | overshoot 4.3% | 497ms
+     Deliberately heavy — the high mass is the whole point. A switch knob that
+     snaps feels like a checkbox; one with weight feels like a physical toggle.
+     Reserve for controls where the mass IS the affordance. */
+  --ease-spring-weighted: linear(
+    0, 0.0373 4.17%, 0.129 8.33%, 0.2504 12.5%, 0.3829 16.67%, 0.5135 20.83%,
+    0.6337 25%, 0.7387 29.17%, 0.8263 33.33%, 0.8963 37.5%, 0.9498 41.67%,
+    0.9887 45.83%, 1.0151 50%, 1.0316 54.17%, 1.0402 58.33%, 1.0432 62.5%,
+    1.0421 66.67%, 1.0384 70.83%, 1.0333 75%, 1.0277 79.17%, 1.022 83.33%,
+    1.0167 87.5%, 1.012 91.67%, 1.0081 95.83%, 1
+  );
+
+  /* k=170 c=24 m=1.2 | ζ=0.840 | overshoot 0.8% | 584ms
+     Soft, loose, with just enough overshoot to settle with life rather than
+     snap. For a travelling indicator that should feel alive — the one place
+     overshoot on a moving indicator is wanted rather than sloppy. */
+  --ease-spring-overshoot: linear(
+    0, 0.0308 3.85%, 0.106 7.69%, 0.2052 11.54%, 0.3141 15.38%, 0.4228 19.23%,
+    0.5253 23.08%, 0.6178 26.92%, 0.6988 30.77%, 0.7677 34.62%, 0.825 38.46%,
+    0.8715 42.31%, 0.9086 46.15%, 0.9375 50%, 0.9595 53.85%, 0.9758 57.69%,
+    0.9877 61.54%, 0.9959 65.38%, 1.0014 69.23%, 1.0048 73.08%, 1.0067 76.92%,
+    1.0076 80.77%, 1.0077 84.62%, 1.0073 88.46%, 1.0066 92.31%, 1.0058 96.15%, 1
+  );
+
+  /* k=500 c=14 m=0.7 | ζ=0.374 | overshoot 28.2% | 534ms
+     Genuinely bouncy — crosses well past the target and wobbles back twice.
+     Reserve for small, playful, LOW-FREQUENCY moments: a badge appearing, an
+     accordion opening. On anything large or frequent it becomes irritating
+     within about three interactions. */
+  --ease-spring-bouncy: linear(
+    0, 0.0784 2.94%, 0.273 5.88%, 0.5235 8.82%, 0.7774 11.76%, 0.9961 14.71%,
+    1.1564 17.65%, 1.2502 20.59%, 1.2814 23.53%, 1.2623 26.47%, 1.2092 29.41%,
+    1.1393 32.35%, 1.0675 35.29%, 1.005 38.24%, 0.9585 41.18%, 0.9308 44.12%,
+    0.9209 47.06%, 0.9254 50%, 0.9398 52.94%, 0.9593 55.88%, 0.9796 58.82%,
+    0.9975 61.76%, 1.0109 64.71%, 1.0191 67.65%, 1.0222 70.59%, 1.0212 73.53%,
+    1.0173 76.47%, 1.0119 79.41%, 1.0061 82.35%, 1.001 85.29%, 0.9971 88.24%,
+    0.9947 91.18%, 0.9938 94.12%, 0.994 97.06%, 1
+  );
+
+  /* k=690 c=23 m=0.6 v₀=98 | ζ=0.565 | overshoot 100.5% | 320ms
+     The one curve here that does NOT start from rest. Every spring above solves
+     x(0)=1, x′(0)=0 — an element placed at a distance and let go. This one
+     solves x′(0)=-98: an element that was being *held* out of position and is
+     released, so the stored energy is in the initial condition rather than in
+     the spring constant.
+
+     That is why no existing token substitutes. Overshoot from rest is bounded
+     by the damping ratio, and `-bouncy` already occupies the loosest usable
+     end of it at 28%. Doubling the travel on the rebound is unreachable from
+     rest at any ζ that still settles inside a third of a second; it needs the
+     launch. The result peaks 100% past the target at 47ms and is home by 320ms,
+     with an 11.7% counter-swing too small to read as a wobble.
+
+     ⚠️ Overshoot is a fraction of TRAVEL, so this curve rebounds by however far
+     the element moved. On a 4px hover lift that is a 4px dip past rest, which
+     is the point. On anything travelling further than about 8px it is a defect.
+     Releases only — never an enter. */
+  --ease-spring-release: linear(
+    0, 0.827 3.03%, 1.4128 6.06%, 1.7797 9.09%, 1.963 12.12%, 2.0031 15.15%,
+    1.941 18.18%, 1.814 21.21%, 1.6536 24.24%, 1.4844 27.27%, 1.3244 30.3%,
+    1.1851 33.33%, 1.0724 36.36%, 0.9883 39.39%, 0.9313 42.42%, 0.8981 45.45%,
+    0.8844 48.48%, 0.8853 51.52%, 0.8961 54.55%, 0.9129 57.58%, 0.9323 60.61%,
+    0.9517 63.64%, 0.9694 66.67%, 0.9844 69.7%, 0.9961 72.73%, 1.0045 75.76%,
+    1.0099 78.79%, 1.0128 81.82%, 1.0136 84.85%, 1.0129 87.88%, 1.0113 90.91%,
+    1.0092 93.94%, 1.0069 96.97%, 1
+  );
+
+  /* k=140 c=26 m=1.2 | ζ=1.003 | overshoot 0.0% | 693ms
+     Critically damped and slow — heavier and softer than any UI spring. For
+     editorial text reveals, where the motion is the content rather than
+     feedback about a control. Too slow for anything interactive. */
+  --ease-spring-editorial: linear(
+    0, 0.0548 5%, 0.1726 10%, 0.3089 15%, 0.4404 20%, 0.557 25%, 0.6552 30%,
+    0.7351 35%, 0.7986 40%, 0.8482 45%, 0.8864 50%, 0.9155 55%, 0.9375 60%,
+    0.9539 65%, 0.9662 70%, 0.9752 75%, 0.9819 80%, 0.9869 85%, 0.9905 90%,
+    0.9931 95%, 1
+  );
+
+  /* The documented default. Aliased rather than duplicated so retuning the
+     system's overall feel is a one-line change. */
+  --ease-spring: var(--ease-spring-press);
+
+  /* --- Keyframe animations ---------------------------------------------- */
+
+  /* Error shake. Six decaying stops — the decay is what separates "shake" from
+     "vibrate". Used by inputs on validation failure. */
+  --animate-shake: shake 450ms var(--ease-out-expo);
+  /* Quieter shake for rejected interaction (pressing a disabled control). */
+  --animate-nudge: nudge 600ms var(--ease-out-expo);
+  /* Attention ring that breathes rather than blinks. */
+  --animate-pulse-ring: pulse-ring 1600ms var(--ease-in-out-circ) infinite;
+  /* Loading sweep for text and skeletons. Linear — any easing reads as a stutter
+     at the loop seam. */
+  --animate-shimmer: shimmer 2500ms linear infinite;
+  /* Pointer-origin ripple. Consumers set --ripple-x / --ripple-y. */
+  --animate-ripple: ripple 1600ms var(--ease-out-expo);
+  /* A knob's whole travel layer on one clock: `travel-bounce` carrying the
+     position on `translate`, and `travel-squish` riding along on `scale` — the
+     third transform property — so the pair layers over a `transform` carrying
+     press feedback without any of the three contending for the same one.
+     Neither half is expressible as a transition: an overshoot past a
+     destination and a there-and-back on one property both need keyframes.
+
+     One token naming two animations rather than two `animate-*` classes,
+     because `animation` is a shorthand — a second utility would silently
+     replace the first, and `cn()` (twMerge) would drop one of the pair before
+     the browser ever saw it.
+
+     Both halves share --duration-travel deliberately. A consumer that drops the
+     class on `animationend` gets that event from whichever half finishes first,
+     so a longer sibling would be cut off mid-recovery.
+
+     Consumers set --travel-x (the resting destination), --travel-distance (how
+     far this journey is) and --travel-dir (+1 / -1), the way --animate-ripple
+     asks for --ripple-x / --ripple-y. */
+  --animate-travel:
+    travel-bounce var(--duration-travel) var(--ease-out-back),
+    travel-squish var(--duration-travel) var(--ease-in-out-circ);
+  /* The same travel layer for a part whose journey is not one fixed knob
+     width: a tab indicator, a segment pill — anything crossing N positions a
+     variable distance apart, on either axis. Same clock, same pairing, same
+     reason for being one token.
+
+     It is a sibling rather than a generalisation of `--animate-travel`, so the
+     Switch keeps its keyframes byte for byte. The difference is where the
+     overshoot comes from. `travel-bounce` lets `--ease-out-back` supply it,
+     and that curve overshoots by 4.08% of whatever it is asked to cover —
+     0.6px on a 14.67px knob, 11px on a 270px hop across three tabs. A fixed
+     part can afford a proportional overshoot; a variable one cannot, so
+     `travel-slide` makes its run out monotonic and writes the overshoot into
+     the stops as a fixed distance (see the keyframes).
+
+     Consumers set --travel-dx / --travel-dy (origin minus destination, so
+     where the part is now relative to where it will rest), --travel-dir-x /
+     --travel-dir-y (+1 / -1 / 0 per axis) and optionally --travel-squash-x /
+     --travel-squash-y. The resting position is read off the element itself,
+     not handed in — see the keyframes for what that requires. */
+  --animate-travel-slide:
+    travel-slide var(--duration-travel) var(--ease-out-back),
+    travel-slide-squish var(--duration-travel) var(--ease-in-out-circ);
+}
+
+@keyframes shake {
+  0% { translate: 0 0; }
+  16% { translate: -6px 0; }
+  32% { translate: 6px 0; }
+  48% { translate: -4px 0; }
+  64% { translate: 4px 0; }
+  82% { translate: -2px 0; }
+  100% { translate: 0 0; }
+}
+
+@keyframes nudge {
+  0% { translate: 0 0; }
+  25% { translate: -2px 0; }
+  50% { translate: 2px 0; }
+  75% { translate: -1px 0; }
+  100% { translate: 0 0; }
+}
+
+@keyframes pulse-ring {
+  0%, 100% { scale: 0.94; opacity: 0.08; }
+  50% { scale: 1.08; opacity: 0.16; }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@keyframes ripple {
+  from { scale: 0.05; opacity: 0.3; }
+  to { scale: 1; opacity: 0; }
+}
+
+/* Trough at 22% — on the 350ms travel clock that is 77ms, and the position
+   half is all but done by then: sampled off a live thumb, the knob has covered
+   94% of its 14.67px by 19% and has crossed its stop by 24%. So the compression
+   lands on ARRIVAL, not mid-flight — it reads as the knob absorbing the stop
+   rather than as a decoration on top of the movement. `--ease-out-back` puts
+   its peak velocity at t=0, so there is no mid-journey moment to sit on.
+
+   The 1.2% rebound at 55% releases the compression while the bounce is still
+   walking back its overshoot; the long tail eases both to rest together. */
+@keyframes travel-squish {
+  0% { scale: 1; }
+  22% { scale: 0.9; }
+  55% { scale: 1.012; }
+  100% { scale: 1; }
+}
+
+/* Two bounces, layered, and the layering IS the effect. The easing supplies the
+   first — it overshoots each interval's own endpoint by 4.08% — so the run out
+   to the 55% stop peaks about 1.6px beyond the destination on a 22px track and
+   falls back. The 55% stop supplies the second by parking 1px PAST the
+   destination instead of on it, so the knob overshoots, eases to a 0.3px lean
+   at 80%, and only then lands. Neither half alone reads as a bounce: the ease
+   on its own is a single lobe, and the stops on their own are a staircase.
+
+   Every stop is written relative to --travel-x, the same value the element's
+   resting `translate` holds, so one set of keyframes serves both directions and
+   the animation cannot disagree with where the knob is parked. --travel-dir
+   flips the sign; the 0% stop reconstructs the origin by walking
+   --travel-distance back from the destination rather than being told it. */
+@keyframes travel-bounce {
+  0% { translate: calc(var(--travel-x) - var(--travel-distance) * var(--travel-dir)) 0; }
+  55% { translate: calc(var(--travel-x) + 1px * var(--travel-dir)) 0; }
+  80% { translate: calc(var(--travel-x) + 0.3px * var(--travel-dir)) 0; }
+  100% { translate: var(--travel-x) 0; }
+}
+
+/* `travel-bounce` for a variable journey on either axis.
+
+   Every stop is written relative to --tw-translate-x / --tw-translate-y, the
+   pair Tailwind's `translate-x-*` / `translate-y-*` utilities write and then
+   compose into `translate`. That is this file's own "cannot disagree with
+   where it is parked" rule, reached without the consumer restating its
+   resting position in a second variable — which matters for the underline
+   tab, whose resting y is a calc over three measured values. The 100% stop
+   is left out for the same reason; an omitted end keyframe is the element's
+   own underlying value, so the landing is exact even for a consumer this
+   comment did not anticipate.
+
+   The cost is a hard requirement: the element must carry BOTH a
+   `translate-x-*` and a `translate-y-*` utility — `translate-y-0` when it
+   never moves on that axis — and never an arbitrary `[translate:…]`. Tailwind
+   registers both properties with `@property … initial-value: 0`, a bare 0
+   with no unit, so a missing axis is never empty and no `var()` fallback can
+   stand in for it; it substitutes `0`, `calc(0 + 40px)` is invalid, and the
+   stop computes to no translate at all. Measured on a part resting at 100px
+   with only `translate-x-*`: the 0% stop read `0px` instead of `140px`, a
+   100px jump on the first frame. Hence no fallbacks on those two below.
+
+   The run out to 55% overrides the shorthand's `--ease-out-back` with
+   `--ease-out-quart`, which never passes its endpoint. It is spelled as its
+   value because Chromium does not apply a `var()` in a keyframe's
+   `animation-timing-function`: it parses, raises nothing, and the interval
+   silently takes the animation's own easing instead. Two things were wrong
+   with the first `var(--ease-out-quart)`, and only one of them is fixable:
+
+   - The token was not in the stylesheet. Tailwind emits a theme variable only
+     when something references it, and with this keyframe spelled literally
+     nothing does, so the build carries it 0 times. A `var()` here is enough
+     to get it emitted — measured, 0 declarations become 1 — so this half was
+     real, but it was not the whole story.
+   - With it emitted and `cubic-bezier(0.25, 1, 0.5, 1)` read off :root,
+     Chromium 151 still reported `cubic-bezier(0.34, 1.35, 0.64, 1)` for every
+     interval in `getKeyframes()`, and the indicator peaked 8.79px past a
+     183px hop and 14.83px past a 338px one. Spelled literally: 1.59px past
+     both. Declaring the variable on the animated element itself changes
+     nothing; an isolated page gives the interval the animation's `linear`.
+
+   That is narrower than "no var() in keyframes". The `translate` stops in
+   this very keyframe resolve their `var()`s per element and always have; it
+   is the per-keyframe timing function alone that does not. Keep the literal
+   in step with the token by hand. Everything past the destination is
+   therefore the --travel-lean written into the 55% and 80% stops: the same
+   distance on a 42px hop as on a 270px one. The later intervals keep
+   `--ease-out-back`; 4.08% of a 1.1px walk-back is nothing. Quart is also
+   what keeps the squish on arrival: it has covered 87% of the journey by the
+   22% trough, against the knob's 94% by 19%. */
+@keyframes travel-slide {
+  0% {
+    translate:
+      calc(var(--tw-translate-x) + var(--travel-dx, 0px))
+      calc(var(--tw-translate-y) + var(--travel-dy, 0px));
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1); /* --ease-out-quart */
+  }
+  55% {
+    translate:
+      calc(var(--tw-translate-x) + var(--travel-lean) * var(--travel-dir-x, 0))
+      calc(var(--tw-translate-y) + var(--travel-lean) * var(--travel-dir-y, 0));
+  }
+  80% {
+    translate:
+      calc(var(--tw-translate-x) + var(--travel-lean) * 0.3 * var(--travel-dir-x, 0))
+      calc(var(--tw-translate-y) + var(--travel-lean) * 0.3 * var(--travel-dir-y, 0));
+  }
+}
+
+/* `travel-squish` with the squeeze per axis. At the 0.9 defaults it draws the
+   identical curve — the 1.012 rebound is 12% of the squeeze given back, and
+   that ratio is kept — so a small part needs to set nothing. A wide one does:
+   0.9 takes 2.2px off a 22px knob and 9px off a 90px tab pill. Squash along
+   the axis of travel by a fixed few pixels (1 − 4px / width) and leave the
+   cross axis at 1. Ends left out so it lands on whatever `scale` the element
+   rests at. */
+@keyframes travel-slide-squish {
+  22% { scale: var(--travel-squash-x, 0.9) var(--travel-squash-y, 0.9); }
+  55% {
+    scale:
+      calc(1 + (1 - var(--travel-squash-x, 0.9)) * 0.12)
+      calc(1 + (1 - var(--travel-squash-y, 0.9)) * 0.12);
+  }
+}
+
+:root {
+  /* --- Durations --------------------------------------------------------
+     Tailwind v4 has no `--duration-*` theme namespace, so these are plain
+     custom properties surfaced as utilities via `@utility` below. */
+
+  --duration-instant: 75ms; /* colour on hover — below the threshold of feeling slow */
+  --duration-fast: 100ms; /* the existing hardcoded `duration-100` */
+  --duration-base: 150ms; /* default state change */
+  --duration-slow: 250ms; /* overlays entering */
+  --duration-slower: 400ms; /* large surfaces */
+
+  /* Exits. Rule 1 above: springs enter, tweens leave. Short and decisive. */
+  --duration-exit: 160ms;
+
+  /* Matched to their spring's perceptual settle. Using a spring easing at any
+     other duration truncates the curve — it is only correct at these. */
+  --duration-spring-press: 170ms;
+  --duration-spring-glide: 364ms;
+  --duration-spring-panel: 443ms;
+  --duration-spring-swap: 219ms;
+  --duration-spring-weighted: 497ms;
+  --duration-spring-overshoot: 584ms;
+  --duration-spring-bouncy: 534ms;
+  --duration-spring-release: 320ms;
+  --duration-spring-editorial: 693ms;
+  --duration-spring: var(--duration-spring-press);
+
+  /* A knob crossing its track. Deliberately NOT one of the pairs above: what
+     carries it is keyframe stops plus a bezier re-applied per interval, not a
+     spring solve, so "only correct at its matched duration" does not apply and
+     no `--ease-*` is implied by the name. Tuned by eye against the Switch
+     thumb, not derived. No `duration-travel` utility to go with it — every consumer
+     spends it inside a two-value `transition-duration` list (the Switch
+     thumb, `turn-travel`) or an `--animate-*` token, neither of which a
+     single-value utility can express (the same reason the `anim-*` set
+     exists). */
+  --duration-travel: 350ms;
+
+  /* --- Press and lean ---------------------------------------------------
+     The Switch's press, named so it can be spent elsewhere — and so reduced
+     motion can reach it. A held squeeze or lean is a DISTANCE: collapsing the
+     clock only makes it arrive in 1ms, and the element still sits 4px over
+     for as long as the finger is down. Zeroing these below is what removes
+     it. (The Switch itself still spells its own as literals and is left
+     alone; these equal them.)
+
+     --press-scale   a whole control under the finger — the 0.96 Toggle
+                     already uses. Compact controls only: on a full-width row
+                     4% is 24px, and on a trigger that anchors a popup the
+                     panel is positioned against the squeezed box.
+     --press-squeeze the part that is about to move — a knob, a chevron, a
+                     glyph. 0.9, the Switch thumb's.
+     --press-lean    how far that part leans toward where it is going while
+                     held. The Switch thumb's 4px.
+     --press-lean-angle the same lean for a part that turns. 15deg is 1/12 of
+                     a half turn: a chevron that leaned the Switch's 27% of its
+                     journey would read as already having flipped.
+
+     --travel-lean   how far `travel-slide` parks past its destination before
+                     settling — the 1.6px peak measured off the Switch's own
+                     bounce, so a tab and a knob land with the same give. */
+  --press-scale: 0.96;
+  --press-squeeze: 0.9;
+  --press-lean: calc(var(--spacing) * 1);
+  --press-lean-angle: 15deg;
+  --travel-lean: 1.6px;
+
+  /* Per-unit delay for staggered reveals (letters, list items, ticks). */
+  --stagger-tight: 25ms;
+  --stagger-base: 35ms;
+  --stagger-loose: 90ms;
+
+  /* --- Neighbour response ------------------------------------------------
+     Stagger spreads a response over TIME; these spread it over DISTANCE. A
+     hovered element in a row lifts by the full amount and each neighbour gets
+     `falloff^n` of it, so the row bends around the pointer instead of one item
+     popping out of a static line.
+
+     0.45 is the largest ratio at which the third neighbour is already under
+     half a pixel of a 4px lift — far enough for the bend to read, short enough
+     that it does not turn into a wave crossing the whole group. */
+  --lift-hover: 4px;
+  --falloff-neighbor: 0.45;
+
+  /* --- Skeleton → content reveal ----------------------------------------
+     Consumed by the `reveal-*` utilities at the foot of this file. Kept as
+     tokens rather than literals inside the utilities so reduced motion can
+     neutralise them, which is the designed compliance path (see below).
+
+     The rise exists to satisfy rule 3: the blur is a materialise cue and a
+     materialise cue never travels alone. 4px is the smallest rise that
+     still reads as arrival rather than as a jitter. (The multiples-of-5 note
+     further down is about tw-animate-css `slide-in-from-*`, which resolves them
+     as percentages; this token is consumed by a hand-written `translate` and is
+     not subject to it.) */
+  --reveal-duration: var(--duration-slower);
+  --reveal-blur: 2px;
+  --reveal-rise: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion
+
+   The principle is "keep meaning, remove travel": state still changes instantly
+   and correctly, colour and opacity are preserved, and transforms, blur, and
+   overshoot are dropped. A reduced-motion user should lose the physics, not the
+   feedback.
+
+   Two overlapping mechanisms, deliberately:
+
+   1. Collapsing the duration tokens is the *designed* path — anything built on
+      the vocabulary above complies for free, with no `motion-safe:` prefix to
+      forget and no per-component work.
+   2. The global rule is the backstop for what tokens cannot reach: hardcoded
+      `duration-*` utilities, third-party keyframes, `tw-animate-css`.
+
+   Durations collapse to 1ms rather than 0 on purpose — `transitionend` and
+   `animationend` still fire, so components that sequence work off those events
+   keep functioning instead of hanging.
+*/
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 1ms;
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+    --duration-slower: 1ms;
+    --duration-exit: 1ms;
+    --duration-spring-press: 1ms;
+    --duration-spring-glide: 1ms;
+    --duration-spring-panel: 1ms;
+    --duration-spring-swap: 1ms;
+    --duration-spring-weighted: 1ms;
+    --duration-spring-overshoot: 1ms;
+    --duration-spring-bouncy: 1ms;
+    --duration-spring-release: 1ms;
+    --duration-spring-editorial: 1ms;
+    --duration-travel: 1ms;
+    --stagger-tight: 0ms;
+    --stagger-base: 0ms;
+    --stagger-loose: 0ms;
+
+    /* Distances, not durations, so collapsing the clock does not reach them —
+       a 4px lift with a 1ms duration is still a 4px jump under the pointer.
+       Zeroing the travel is what actually removes it. `--falloff-neighbor` is
+       left alone: it is a ratio of a distance that is now zero. */
+    --lift-hover: 0px;
+    --reveal-blur: 0px;
+    --reveal-rise: 0px;
+
+    /* Same reasoning for the press. A scale of 1 and a lean of 0 leave the
+       held state identical to rest; the colour change that says "pressed"
+       is untouched. */
+    --press-scale: 1;
+    --press-squeeze: 1;
+    --press-lean: 0px;
+    --press-lean-angle: 0deg;
+    --travel-lean: 0px;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Duration utilities
+
+   `duration-fast`, `duration-spring-press`, … alongside Tailwind's numeric
+   `duration-150`, so a review can read intent from the class alone.
+
+   ⚠️ Each one MUST set `--tw-duration` as well as `transition-duration`.
+
+   `animate-in`/`animate-out` expand to a shorthand that reads its duration from
+   `var(--tw-animation-duration, var(--tw-duration, .15s))` — it never looks at
+   `transition-duration`. A utility that sets only `transition-duration` is
+   therefore a **silent no-op** next to `animate-out`: the class applies, no
+   error is raised, and the animation quietly runs at the 0.15s default. Setting
+   both makes one class correct in both contexts, which is the whole point of
+   naming them.
+
+   Tailwind registers `--tw-duration` with `@property`, so assigning it here is
+   exactly what its own `duration-*` utility does.
+*/
+@utility duration-instant {
+  --tw-duration: var(--duration-instant);
+  transition-duration: var(--duration-instant);
+}
+@utility duration-fast {
+  --tw-duration: var(--duration-fast);
+  transition-duration: var(--duration-fast);
+}
+@utility duration-base {
+  --tw-duration: var(--duration-base);
+  transition-duration: var(--duration-base);
+}
+@utility duration-slow {
+  --tw-duration: var(--duration-slow);
+  transition-duration: var(--duration-slow);
+}
+@utility duration-slower {
+  --tw-duration: var(--duration-slower);
+  transition-duration: var(--duration-slower);
+}
+@utility duration-exit {
+  --tw-duration: var(--duration-exit);
+  transition-duration: var(--duration-exit);
+}
+@utility duration-spring {
+  --tw-duration: var(--duration-spring);
+  transition-duration: var(--duration-spring);
+}
+@utility duration-spring-press {
+  --tw-duration: var(--duration-spring-press);
+  transition-duration: var(--duration-spring-press);
+}
+@utility duration-spring-glide {
+  --tw-duration: var(--duration-spring-glide);
+  transition-duration: var(--duration-spring-glide);
+}
+@utility duration-spring-panel {
+  --tw-duration: var(--duration-spring-panel);
+  transition-duration: var(--duration-spring-panel);
+}
+@utility duration-spring-swap {
+  --tw-duration: var(--duration-spring-swap);
+  transition-duration: var(--duration-spring-swap);
+}
+@utility duration-spring-weighted {
+  --tw-duration: var(--duration-spring-weighted);
+  transition-duration: var(--duration-spring-weighted);
+}
+@utility duration-spring-overshoot {
+  --tw-duration: var(--duration-spring-overshoot);
+  transition-duration: var(--duration-spring-overshoot);
+}
+@utility duration-spring-bouncy {
+  --tw-duration: var(--duration-spring-bouncy);
+  transition-duration: var(--duration-spring-bouncy);
+}
+@utility duration-spring-release {
+  --tw-duration: var(--duration-spring-release);
+  transition-duration: var(--duration-spring-release);
+}
+@utility duration-spring-editorial {
+  --tw-duration: var(--duration-spring-editorial);
+  transition-duration: var(--duration-spring-editorial);
+}
+
+/* Animation-only counterparts. `--tw-animation-duration` wins over
+   `--tw-duration` in the shorthand, so these let one element run a keyframe
+   animation and a transition at *different* durations — the only case where the
+   `duration-*` utilities above are not sufficient on their own. */
+@utility anim-fast {
+  --tw-animation-duration: var(--duration-fast);
+  animation-duration: var(--duration-fast);
+}
+@utility anim-base {
+  --tw-animation-duration: var(--duration-base);
+  animation-duration: var(--duration-base);
+}
+@utility anim-slow {
+  --tw-animation-duration: var(--duration-slow);
+  animation-duration: var(--duration-slow);
+}
+@utility anim-slower {
+  --tw-animation-duration: var(--duration-slower);
+  animation-duration: var(--duration-slower);
+}
+@utility anim-exit {
+  --tw-animation-duration: var(--duration-exit);
+  animation-duration: var(--duration-exit);
+}
+@utility anim-spring {
+  --tw-animation-duration: var(--duration-spring);
+  animation-duration: var(--duration-spring);
+}
+@utility anim-spring-panel {
+  --tw-animation-duration: var(--duration-spring-panel);
+  animation-duration: var(--duration-spring-panel);
+}
+@utility anim-spring-bouncy {
+  --tw-animation-duration: var(--duration-spring-bouncy);
+  animation-duration: var(--duration-spring-bouncy);
+}
+
+/* ---------------------------------------------------------------------------
+   Interop notes — two traps in the enter/exit animation utilities
+
+   1. **Slide distances that are multiples of 5 are PERCENTAGES, not spacing.**
+      `slide-in-from-top-*` declares its value twice, and the later declaration
+      wins:
+
+        --tw-enter-translate-y: calc(<n> * var(--spacing) * -1)    <- 4 x 4px
+        --tw-enter-translate-y: calc(<percentage-n> * -100%)       <- this wins
+
+      A `--percentage-*` entry exists for every multiple of 5, so
+      `slide-in-from-top-5` resolves to **5% of the element height**, not
+      20px, and therefore changes with the element size. `slide-in-from-top-4`
+      has no percentage entry, so it correctly resolves to 16px.
+
+      **Use non-multiples of 5 whenever you mean a fixed pixel distance.**
+
+   2. **Enter and exit are one animation, not two properties.** The `enter` and
+      `exit` keyframes drive opacity, transform *and* filter together, so
+      "fade faster than it scales" is not expressible with these utilities. Pick
+      the easing whose shape gives the emphasis you want instead — the spring
+      curves above are ~85% resolved at half their duration, so opacity already
+      reads as arriving before the transform settles.
+*/
+
+/* ---------------------------------------------------------------------------
+   Motion primitives
+
+   Small building blocks the component pass composes. Each is one idea.
+*/
+
+/* Stroke draw-on. The element supplies its own path length via --draw-length
+   (or inherits the 100 default, which works for any path if pathLength="100").
+
+   The two directions are timed separately, which is rule 2 applied to a stroke:
+   a mark that erases as slowly as it drew reads as being un-drawn by hand, when
+   what actually happened is that the state was withdrawn. The forward timing
+   lives on `-done` and the reverse on the base, because a transition is always
+   declared by the state you are leaving.
+
+   Optional: raising `--draw-length` past the real normalised length spends the
+   surplus on nothing visible. At 112 the stroke is complete at 90% of the dash
+   travel, so the last of the easing tail lands after the mark is already whole
+   and the finish reads as arrival rather than as the tip creeping to a stop. */
+/* Longhands, never the `transition` shorthand. The shorthand resets every
+   longhand it does not name — including `transition-delay` — and Tailwind
+   emits these utilities *after* an arbitrary `[transition-delay:…]` at equal
+   specificity, so the shorthand silently won and the checkbox tick lost the
+   35ms stagger it still asks for. Measured at 0s where it should have been
+   0.035s. Anything a caller may want to set alongside these stays settable. */
+@utility draw-path {
+  stroke-dasharray: var(--draw-length, 100);
+  stroke-dashoffset: var(--draw-length, 100);
+  transition-property: stroke-dashoffset;
+  transition-duration: var(--duration-exit);
+  transition-timing-function: var(--ease-in-quart);
+}
+@utility draw-path-done {
+  stroke-dashoffset: 0;
+  transition-property: stroke-dashoffset;
+  transition-duration: var(--duration-slow);
+  transition-timing-function: var(--ease-out-expo);
+}
+
+/* A row of overlapping avatars that responds to the seat under the pointer,
+   with the response falling off geometrically along the row.
+
+   Why this lives here and not in a class string on the component: the rules
+   have to be *ordered*, and Tailwind chooses its own emission order. Expressed
+   as arbitrary variants, all seven falloff rules landed at equal specificity
+   and Tailwind emitted forward rules near-to-far but backward rules
+   far-to-near, so with two engaged seats bracketing a third the backward rule
+   always won regardless of distance — seat 2 between an engaged 1 and an
+   engaged 5 took the distance-3 lift instead of distance-1. No arrangement of
+   arbitrary variants fixes that, because the order is not ours to pick.
+
+   Here it is. Every falloff guard is wrapped in `:where()`, which contributes
+   no specificity, so all six sit at (0,0,0) and the last match wins — hence
+   far-to-near, nearest engaged seat decides. The engaged rule is (0,1,0) and
+   therefore beats all of them outright, which is what removes the need for the
+   `:not(:is(:hover,:focus-within))` guards an earlier attempt threaded through
+   every compound and still got wrong in two of three positions.
+
+   The whole block is inside `prefers-reduced-motion: no-preference`, not
+   gated by zeroing `--lift-hover`. A zeroed distance still yields
+   `translate: 0px`, and `0px` is not `none` — the seat stays a stacking
+   context, trapping a badge behind its neighbour with no lift to show for it.
+   `z-index` is in here for the same reason: it exists only to escape the
+   stacking context the translate creates, so it has to disappear with it, or a
+   hovered seat covers the badge of the seat to its *left* instead. */
+@utility avatar-lift {
+  > * {
+    transition-property: translate, scale;
+    transition-duration: var(--duration-spring-release);
+    transition-timing-function: var(--ease-spring-release);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    > :where(:is(:hover, :focus-within) + * + * + *),
+    > :where(:has(+ * + * + *:is(:hover, :focus-within))) {
+      --avatar-lift: 0 calc(var(--lift-hover) * -1 * var(--falloff-neighbor) * var(--falloff-neighbor) * var(--falloff-neighbor));
+    }
+
+    > :where(:is(:hover, :focus-within) + * + *),
+    > :where(:has(+ * + *:is(:hover, :focus-within))) {
+      --avatar-lift: 0 calc(var(--lift-hover) * -1 * var(--falloff-neighbor) * var(--falloff-neighbor));
+    }
+
+    > :where(:is(:hover, :focus-within) + *),
+    > :where(:has(+ *:is(:hover, :focus-within))) {
+      --avatar-lift: 0 calc(var(--lift-hover) * -1 * var(--falloff-neighbor));
+    }
+
+    /* (0,1,0) — outranks every falloff rule above, whatever the order. */
+    > :is(:hover, :focus-within) {
+      --avatar-lift: 0 calc(var(--lift-hover) * -1);
+      scale: 1.05;
+      z-index: 10;
+    }
+
+    /* Read the resolved distance. `none` rather than `0 0` for seats the
+       effect never reaches, so they create no stacking context at all. */
+    &:is(:hover, :focus-within) > * {
+      translate: var(--avatar-lift, none);
+      transition-duration: var(--duration-spring-glide);
+      transition-timing-function: var(--ease-spring-glide);
+    }
+  }
+}
+
+/* Digit column for rolling number tickers. The height is its own token rather
+   than an em against body text — deriving it from a line-height would couple
+   the ticker to typography and move layout when type changes. */
+@utility digit-column {
+  --digit-height: 1.1em;
+  line-height: var(--digit-height);
+  font-variant-numeric: tabular-nums;
+  transition: translate var(--duration-slower) var(--ease-out-expo);
+}
+
+/* GPU hint for elements about to animate transforms. Applied on hover/open
+   rather than permanently — a standing `will-change` costs memory on every
+   instance and defeats the point. */
+@utility will-move {
+  will-change: transform, opacity;
+}
+
+/* A part that turns between two orientations — the chevron on a disclosure,
+   a select, a tree row. It is the Switch's grammar with `rotate` standing in
+   for `translate`: `rotate` is the travel, on the travel clock and the curve
+   that crosses its destination and comes back (7.3° past a half turn, 3.7°
+   past a quarter); `transform` is the press, on the press spring.
+
+   A transition, not keyframes, and that is the whole saving. A transition
+   never runs on first paint, because there is no earlier value to come from,
+   and a reversal mid-turn retargets from wherever the part is — so the two
+   things the Switch needs a flag and a rewind for are free here, and a file
+   that has no `"use client"` can have this without acquiring one. What it
+   cannot have is the arrival squish: a there-and-back on one property is
+   keyframes, and keyframes keyed to state replay on mount.
+
+   Longhands, for the reason `draw-path` gives. Anything already transitioning
+   `transform` on the element has to come off it, or the two lists contend and
+   stylesheet order picks the winner. */
+@utility turn-travel {
+  transition-property: rotate, transform;
+  transition-duration: var(--duration-travel), var(--duration-spring-press);
+  transition-timing-function: var(--ease-out-back), var(--ease-spring-press);
+}
+
+/* The held state for `turn-travel`: squeeze, and turn a little toward where
+   the part is about to go. Apply under the trigger's active variant; set
+   --turn-dir to -1 in the state whose next turn runs backwards (open, for a
+   chevron that opened by turning forwards), and to 0 for a trigger that
+   changes state on pointerdown — there is no "about to" on those, the turn
+   has already started, and a lean would point back the way it came. */
+@utility press-turn {
+  transform: rotate(calc(var(--press-lean-angle) * var(--turn-dir, 1))) scale(var(--press-squeeze));
+}
+
+/* ---------------------------------------------------------------------------
+   Skeleton → content reveal
+
+   Three utilities and one attribute. A container carries `data-reveal` with the
+   value `loading` or `ready`; the two layers inside it select on that. Nothing
+   else is required, so a component that already renders its own placeholders
+   (Table, Sidebar) opts in by setting the attribute — it does not have to adopt
+   a wrapper, and a wrapper that does exist is a convenience rather than the
+   mechanism.
+
+   ---------------------------------------------------------------------------
+   Why a grid stack and not absolute positioning
+   ---------------------------------------------------------------------------
+
+   The obvious build is `position: relative` on the container and `absolute;
+   inset: 0` on both layers. It crossfades correctly and it is wrong, because
+   two absolutely positioned children contribute no height: the container
+   collapses unless the consumer knows the final height in advance and hardcodes
+   it. Almost nothing does.
+
+   Placing both layers in the same grid cell keeps them stacked AND keeps them
+   both in flow, so the container is as tall as the taller of the two. Render
+   the real content from the first frame — hidden, but laid out — and the box is
+   already at its finished size while the skeleton is still up. The reveal then
+   changes nothing but paint, and there is no reflow at the moment data arrives,
+   which is the jump these placeholders exist to prevent in the first place.
+
+   The layers cannot be `display: none` or `visibility: hidden` for the same
+   reason. Opacity is what hides them; `inert` on the React side is what stops
+   the hidden layer taking focus or clicks.
+*/
+
+/* Both layers occupy cell 1/1. Any further children stack there too, which is
+   deliberate — an overlay spinner is a third layer, not a special case. */
+@utility reveal-stack {
+  display: grid;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+}
+
+/* The placeholder. Fades and softens on its way out; it does not travel,
+   because rule 2 says an exit is shorter than its enter and this one has
+   nowhere to go. */
+@utility reveal-skeleton {
+  transition:
+    opacity var(--reveal-duration) var(--ease-in-out-quart),
+    filter var(--reveal-duration) var(--ease-in-out-quart);
+
+  /* Child combinator, not descendant. `[data-reveal="ready"] &` matches any
+     ancestor, so a loading Reveal inside a ready one was selected by the outer
+     container and never showed its skeleton. Both layers are always direct
+     children of the element carrying the attribute, so scoping costs nothing
+     — but a component opting in by hand must put the attribute on the layers'
+     immediate parent. */
+  [data-reveal="ready"] > & {
+    opacity: 0;
+    filter: blur(var(--reveal-blur));
+    pointer-events: none;
+  }
+}
+
+/* The real thing, resolving out of the blur as it rises the last few pixels.
+   On `translate` rather than `transform` so a component is still free to spend
+   `transform` on press feedback without the two contending. */
+@utility reveal-content {
+  opacity: 0;
+  filter: blur(var(--reveal-blur));
+  translate: 0 var(--reveal-rise);
+  transition:
+    opacity var(--reveal-duration) var(--ease-in-out-quart),
+    filter var(--reveal-duration) var(--ease-in-out-quart),
+    translate var(--reveal-duration) var(--ease-in-out-quart);
+
+  /* `none`, not `blur(0px)` / `0 0`. Either of those is a non-initial value,
+     which leaves the layer a stacking context *and* a containing block for
+     `position: fixed` descendants — permanently, after the reveal has finished.
+     A fixed child inside revealed content was landing at (40, 40) instead of
+     (0, 0). Both still interpolate smoothly from the loading values. */
+  [data-reveal="ready"] > & {
+    opacity: 1;
+    filter: none;
+    translate: none;
+  }
+}

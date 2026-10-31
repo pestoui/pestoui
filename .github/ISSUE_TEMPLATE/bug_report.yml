@@ -1,0 +1,64 @@
+name: Bug report
+description: Something in the design system behaves wrongly.
+labels: [bug]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part
+      options:
+        - "A primitive (packages/ui/src/components/ui)"
+        - "An application component (packages/ui/src/components)"
+        - "The stylesheet, tokens or theme engine"
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      description: If it is one component, name it.
+      placeholder: Button, DataTable, MetricCard…
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: And what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: >
+        The smallest thing that shows it. A code snippet beats a description; a
+        link to a reproduction beats both.
+      render: tsx
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      value: |
+        - `@pestoui/core` version:
+        - React version:
+        - Tailwind version:
+        - Bundler (Vite / Next / other):
+        - Browser and OS:
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: styling
+    attributes:
+      label: If this looks like a styling problem
+      description: >
+        Components rendering with correct markup and almost no styling is nearly
+        always Tailwind not scanning the package. See the README's Tailwind step.
+      options:
+        - label: My Tailwind entry imports `@pestoui/core/styles.css`, or names the package with `@source`

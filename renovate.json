@@ -1,0 +1,190 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "Dependency updates for the Pesto UI component library: the root package.json and packages/ui (@pestoui/core). Tuned for one part-time maintainer, not for a team on rotation.",
+    "The cadence is measured, not guessed. Git history shows 66 commits on 13 distinct days between 2026-07-26 and 2026-08-31, arriving in bursts with 4-, 8- and 9-day gaps between them, and the tree has been untouched since 2026-08-31. A weekly schedule would have queued five batches of pull requests against a repository nobody opened. So: one scheduled window a month, a hard concurrency limit, and every major update parked on the dependency dashboard where it costs one issue to read instead of a branch to triage.",
+    "Renovate rather than Dependabot because one package is declared in both manifests: typescript, in the root package.json and in packages/ui. Renovate updates every manifest for one package on one branch; Dependabot's npm ecosystem opens one pull request per manifest, so a single TypeScript bump would arrive as two. (tailwindcss is declared twice as well, but both entries are in packages/ui: a peer range and a devDependency.)",
+    "There is no .github/dependabot.yml in this repository, so nothing here competes for the single root package-lock.json. Do not add one for version updates: two bots resolving the same lockfile produce conflicts on every batch.",
+    "Renovate commits under the owner's identity (gitAuthor), because check:names lets no other author or committer into history. platformCommit is disabled so its commits are made with git rather than through the GitHub API as the app, and automerge rebases, which keeps that author on main with GitHub as committer: a merge or squash commit made by the app could carry the bot's identity instead. Rebase merging must be allowed in the repository's settings."
+  ],
+  "extends": [
+    "config:recommended",
+    ":semanticCommitTypeAll(chore)",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "gitAuthor": "Fahim Anando <fahim.anando@gmail.com>",
+  "platformCommit": "disabled",
+  "automergeStrategy": "rebase",
+  "timezone": "Asia/Dhaka",
+  "schedule": [
+    "before 6am on the first day of the month"
+  ],
+  "prConcurrentLimit": 3,
+  "prHourlyLimit": 0,
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency dashboard",
+  "labels": [
+    "dependencies"
+  ],
+  "rebaseWhen": "conflicted",
+  "postUpdateOptions": [
+    "npmDedupe"
+  ],
+  "configMigration": true,
+  "osvVulnerabilityAlerts": true,
+  "baseBranches": [
+    "main"
+  ],
+  "lockFileMaintenance": {
+    "description": "Monthly, inside the same window. It was off on the theory that transitive security fixes would arrive through vulnerabilityAlerts, but an audit on 30 October 2026 found sixteen of nineteen vulnerable packages with a fix already in range that never arrived: an alert opens a pull request only for a direct dependency it can bump. A lockfile refresh is what picks those up.",
+    "enabled": true,
+    "schedule": [
+      "before 6am on the first day of the month"
+    ]
+  },
+  "ignoreDeps": [
+    "@pestoui/core"
+  ],
+  "packageRules": [
+    {
+      "description": "Every major update waits on the dashboard. Ticking a checkbox opens the branch; doing nothing leaves one issue to read after a 36-day gap instead of a stack of red pull requests. This is the single rule that makes a skipped month cheap.",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    },
+    {
+      "description": "Peer ranges are never bumped automatically. packages/ui declares react ^19.0.0, react-dom ^19.0.0 and tailwindcss ^4.0.0 as peers; those ranges are the package's published compatibility contract, so widening one is an API decision that belongs in a release, not in a dependency pull request.",
+      "matchDepTypes": [
+        "peerDependencies"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Packages whose failure mode is emitted CSS or rendered pixels, not a type error. CI here runs the gates, lint, typecheck and check:exports; none of them renders a component, so all of them pass on one that mounts while looking wrong. The acceptance gate trusted for appearance is the website's visual gate, a computed-style and bounding-box diff plus a magick compare -metric AE of 0, which runs with its browser suites in a separate private repository, not in this CI. So these get read by a human: tailwindcss regenerates every utility; tw-animate-css supplies keyframes; radix-ui, vaul, sonner, cmdk, embla-carousel-react, react-day-picker, input-otp and react-resizable-panels own their own internal markup and data-state attributes that the stylesheets select on; recharts emits SVG geometry; lucide-react redraws glyphs between minors, and it is many minors behind at 1.27.0, so the first bump is a visual review, not a merge.",
+      "matchPackageNames": [
+        "tailwindcss",
+        "tw-animate-css",
+        "radix-ui",
+        "recharts",
+        "vaul",
+        "sonner",
+        "cmdk",
+        "embla-carousel-react",
+        "react-day-picker",
+        "input-otp",
+        "react-resizable-panels",
+        "next-themes",
+        "lucide-react",
+        "prettier-plugin-tailwindcss"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Patch-level bumps of oxlint and prettier, devDependencies of the root package.json, may automerge. The root is private: true and never published, so a mistake here reaches nobody's install, and the failure mode of this class of tool is a loud one that lint and typecheck catch. Automerge only lands if the branch is green, so CI must stay a required check on main for this line to mean anything.",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchFileNames": [
+        "package.json"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "matchPackageNames": [
+        "oxlint",
+        "prettier"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Type-only packages automerge on patch. tsc --noEmit runs over packages/ui's source and its tests, so a broken type lands as a red pipeline with a file and a line number, which is exactly the evidence needed. Minor versions of @types/react have historically moved ReactNode and ref typing, and those changes reach consumers through the shipped source, so minors stop for review.",
+      "matchPackageNames": [
+        "@types/*"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "React and its types as one pull request. react and react-dom are declared once each, as peers of packages/ui, and @types/react and @types/react-dom once each, as its devDependencies, so this covers two declarations once the peer ranges are excluded. Splitting them guarantees a window where the runtime and its types disagree.",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "groupName": "react",
+      "automerge": false
+    },
+    {
+      "description": "tailwindcss is declared in packages/ui only: at ^4.3.3 as a devDependency, and at ^4.0.0 as a peer range that the peer rule above leaves alone. Not automerged, for the reason in the emitted-CSS rule above, and with one extra hazard specific to this repository: packages/ui/src/index.css names its own sources with unconditional @source directives, and the built stylesheet is ~287 kB with them and ~7 kB without. A Tailwind release that changes how @source resolves renders the components unstyled while every CI job stays green.",
+      "matchPackageNames": [
+        "tailwindcss"
+      ],
+      "groupName": "tailwind",
+      "automerge": false
+    },
+    {
+      "description": "typescript is declared ~6.0.2 in both manifests and the pin is deliberate. Because packages/ui publishes .ts/.tsx and its exports map points at source with no types field and no .d.ts anywhere, the compiler's behaviour is part of what consumers get: their tsc reads this library's source directly, and skipLibCheck does not spare them because it only skips declaration files. In-range patches arrive as one grouped pull request across both manifests and are reviewed, never automerged.",
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "groupName": "typescript",
+      "automerge": false
+    },
+    {
+      "description": "TypeScript 7 is a migration, not a bump. 7.0.2 is published while this repository is held at 6.0.3, and crossing that line changes how a consumer's compiler reads the shipped source. Merging it means re-running the consumer-install test (Vite + TypeScript, Vite + plain JS, Next.js with transpilePackages) and re-checking the library under noUncheckedIndexedAccess and exactOptionalPropertyTypes, where errors are already reported inside the library today. It waits on the dashboard until someone has that afternoon.",
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    },
+    {
+      "description": "@types/node is declared once, in the root package.json, at ^24.13.3 and 26.6.4 is published, but the types major is bound to two other numbers: engines.node says >=22.18.0 <25 and .github/workflows/ci.yml reads node-version-file: .nvmrc, which names 24. Pulling the types ahead of either one types APIs that do not exist at the runtime floor this package claims to support, and nothing in CI notices. Decide the three together.",
+      "matchPackageNames": [
+        "@types/node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    },
+    {
+      "description": "shadcn is a root devDependency, there for the CLI. packages/ui vendors its stylesheet at src/styles/shadcn.css, and check:shadcn-css fails when a bump changes the upstream copy, so every bump is read and the new stylesheet is taken on purpose through the visual gate.",
+      "matchPackageNames": [
+        "shadcn"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Nothing that packages/ui depends on is automerged. The package ships raw .ts/.tsx with no build step, so its dependency graph becomes the consumer's dependency graph verbatim, and no CI job here installs the tarball into a real consumer app. A green pipeline in this repository says the gates, lint and typecheck passed, not that a fresh npm install of @pestoui/core still resolves and compiles. Kept last on purpose: Renovate applies packageRules in order and a later match overrides the same field, so any automerge rule placed after this would silently reopen the published package.",
+      "matchFileNames": [
+        "packages/ui/package.json"
+      ],
+      "automerge": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "description": "Security fixes ignore the monthly window and the 7-day age floor, because the reason for both is to let a bad release be caught by someone else first, and an advisory means it already was. The pull request still waits for a human: this is a one-person repository and an unattended merge of a patch nobody read is the failure this configuration exists to prevent.",
+    "enabled": true,
+    "schedule": [],
+    "minimumReleaseAge": null,
+    "prCreation": "immediate",
+    "prPriority": 10,
+    "labels": [
+      "dependencies",
+      "security"
+    ],
+    "automerge": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* No ambient Vite types: nothing here uses them (src/lib/theme/build.ts says
+       how it reads import.meta.env without them), and a consumer compiles this
+       source without them too. */
+    "types": [],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
+  },
+  /* No `paths` on purpose. This package ships its own source, so every import
+     inside src/ is relative — an alias would only resolve for whoever happened
+     to configure it, and a consumer installing from npm never does. */
+  "include": ["src"]
+}

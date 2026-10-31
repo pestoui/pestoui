@@ -1,0 +1,12 @@
+node_modules
+dist
+package-lock.json
+*.woff
+*.woff2
+*.png
+# A verbatim copy of shadcn's stylesheet: check:shadcn-css compares it byte for byte.
+packages/ui/src/styles/shadcn.css
+# Written by gen:barrel, each export on one long line: check:barrel compares them byte for byte.
+# Its root barrel, packages/ui/src/index.ts, comes out already formatted and is not listed.
+packages/ui/src/components/ui/index.ts
+packages/ui/src/components/index.ts

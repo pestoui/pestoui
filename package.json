@@ -1,0 +1,44 @@
+{
+  "name": "pestoui-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Repository root for Pesto UI's component library, @pestoui/core (packages/ui): its gates, lint, typecheck and release tooling.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pestoui/pestoui.git"
+  },
+  "engines": {
+    "node": ">=22.18.0 <25"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "oxlint",
+    "check:exports": "node scripts/check-exports.mjs",
+    "check:names": "node scripts/check-names.mjs",
+    "check:placeholders": "node scripts/check-placeholders.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:shadcn-css": "node scripts/check-shadcn-css.mjs",
+    "tokens:check": "node scripts/check-tokens.mjs",
+    "test:merge": "node --test packages/ui/test/type-scale-merge.test.ts",
+    "test:chart": "node --test packages/ui/test/chart-style.test.ts",
+    "test:secrets": "node --test scripts/check-secrets.test.mjs",
+    "check:notices": "node scripts/check-notices.mjs",
+    "check:barrel": "npm run gen:barrel --workspace @pestoui/core -- --check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "gen:barrel": "npm run gen:barrel --workspace @pestoui/core"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "oxlint": "^1.71.0",
+    "prettier": "^3.8.2",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "shadcn": "^4.23.0",
+    "typescript": "~6.0.2"
+  }
+}

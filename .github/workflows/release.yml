@@ -1,0 +1,275 @@
+name: Release
+
+# Publishing happens on a tag push and in no other way. There is no
+# workflow_dispatch: a release that can be started by hand is a release whose
+# gates can be skipped by hand, and npm never lets a version number be
+# republished, so every mistake here is permanent.
+#
+# Two jobs, so the right to publish never shares a machine with dependency code.
+# `verify` installs, tests and packs with a read-only token. `publish`
+# receives only the finished tarball, waits for the owner's approval in the `npm`
+# environment, and holds the publish rights for the two commands that need them.
+# packages/ui is `private: true` until the foundation package exists, so npm
+# refuses the publish step today; that is deliberate.
+on:
+  push:
+    tags: ["v*"]
+
+# ci.yml cancels its in-flight runs, because a superseded check is wasted work.
+# The opposite is right here — the wasted work would be half a publish.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+# Every action is pinned to a full commit SHA, with its tag in a comment.
+jobs:
+  verify:
+    name: Verify and pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # check-names.mjs inspects author and committer identity over the last
+          # 500 commits, and the main-branch check below needs origin/main. The
+          # default shallow clone silently reduces both to one commit.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      # --------------------------------------------------------------------
+      # The release-shaped checks ci.yml cannot make: that the tag,
+      # packages/ui/package.json and packages/ui/CHANGELOG.md all describe the
+      # same version, and that the changelog section for it is not empty. It
+      # also writes .release-notes.md, which becomes the GitHub Release body —
+      # so the notes on GitHub are the text the repository records.
+      #
+      # Runs first: it is ~100ms of file reading, so a mistyped tag fails here
+      # instead of after every gate below.
+      # --------------------------------------------------------------------
+      - name: Check the tag, the version and the changelog agree
+        run: node scripts/check-release.mjs "$GITHUB_REF_NAME"
+
+      # Any v* tag would otherwise publish whatever commit it points at.
+      - name: Check the tagged commit is on main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      # --------------------------------------------------------------------
+      # Every gate ci.yml runs, in ci.yml's order. Duplication on purpose: a tag
+      # push matches none of ci.yml's triggers, and "the commit was already
+      # green" is not the same claim — the tag names a tree, and what gets
+      # published is that tree.
+      # --------------------------------------------------------------------
+      - name: Check commit identity and blocked names
+        env:
+          FORBIDDEN_NAMES: ${{ secrets.FORBIDDEN_NAMES }}
+        run: npm run check:names -- --require-list
+
+      - name: Check for committed credentials
+        run: npm run check:secrets
+
+      - name: Test the credential scanner
+        run: npm run test:secrets
+
+      - name: Check placeholder content
+        run: npm run check:placeholders
+
+      - name: Check raw values against the token allowlist
+        run: npm run tokens:check
+
+      - name: Test the type-scale merge registration
+        run: npm run test:merge
+
+      - name: Test the chart style guard
+        run: npm run test:chart
+
+      - name: Check published legal files match their source
+        run: npm run check:notices
+
+      - name: Check the barrels match their sources
+        run: npm run check:barrel
+
+      - name: Check the vendored shadcn stylesheet matches upstream
+        run: npm run check:shadcn-css
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Resolve every published entry point
+        run: npm run check:exports
+
+      # The tarball is made here, from the tree every gate above just passed, and
+      # is the only thing the publish job receives.
+      - name: Pack the release
+        run: |
+          mkdir -p release
+          npm pack --workspace @pestoui/core --pack-destination release
+          cp .release-notes.md release/
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release
+          path: release/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish and announce
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Waits for the owner's approval, but only once the npm environment exists
+    # with a required reviewer (Settings → Environments → npm). GitHub creates a
+    # missing environment on first use with no protection at all, so create it
+    # before the first tag, and name it in npm's trusted-publisher settings.
+    environment: npm
+    permissions:
+      # The OIDC token npm exchanges for short-lived publish rights, and the
+      # token that signs the provenance attestation. No NPM_TOKEN exists in this
+      # repository's secrets: there is no long-lived credential to leak.
+      id-token: write
+      # `gh release create`, below. Nothing else writes to the repository.
+      contents: write
+      # The mirror to GitHub Packages, below, with the job's own token.
+      packages: write
+
+    steps:
+      # No cache, no checkout, no `npm ci`: nothing from node_modules runs in the
+      # job that can publish.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          # .nvmrc's major, written out: this job has no checkout to read it from.
+          node-version: 24
+          # No `registry-url:` on purpose. It writes an .npmrc line expecting
+          # NODE_AUTH_TOKEN, and the point of trusted publishing is that no such
+          # token exists.
+
+      # Trusted publishing needs npm 11.5.1 or later; Node 22 bundles npm 10.x.
+      # An exact version, so the workflow that holds publish rights changes only
+      # with a commit here.
+      - name: Install the npm that does trusted publishing
+        run: npm install -g npm@11.21.1
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release
+          path: release
+
+      # The package name and version come from the tarball's own package.json,
+      # which is what the registries record, and the dist-tag is chosen here once
+      # for every step below. The npm pinned above refuses to publish a
+      # prerelease without an explicit --tag, so v0.2.0-rc.1 goes out as `next`
+      # on both registries and `latest` stays on the last stable version. A
+      # stable release passes no --tag: npm then applies `latest` itself, and
+      # only an implicit `latest` makes npm refuse a version lower than one it
+      # already has. SemVer marks a prerelease with a hyphen after the patch
+      # number; build metadata, after a `+`, can hold one too, so it is cut off
+      # first.
+      - name: Read the package and choose its dist-tag
+        id: tarball
+        run: |
+          manifest=$(tar -xzOf release/*.tgz package/package.json)
+          name=$(node -p 'JSON.parse(process.argv[1]).name' "$manifest")
+          version=$(node -p 'JSON.parse(process.argv[1]).version' "$manifest")
+          case "${version%%+*}" in
+            *-*) dist_tag=next ;;
+            *) dist_tag=latest ;;
+          esac
+          echo "package=$name@$version" >> "$GITHUB_OUTPUT"
+          echo "dist-tag=$dist_tag" >> "$GITHUB_OUTPUT"
+
+      # --provenance ties the tarball to this workflow run and commit. The
+      # package ships source, so the attestation is the only link between the npm
+      # tarball and the git tree. npm publish comes before the GitHub Release
+      # because it is the half that cannot be undone.
+      #
+      # A release that failed partway is finished by re-running the failed job.
+      # The re-run finds the version already on npm and passes over the publish,
+      # but only when npm holds this same tarball: a different one under the same
+      # version stops the run here, before the mirror and the release can
+      # disagree with npm. A lookup that fails passes over nothing, since npm
+      # publish refuses a version that exists.
+      - name: Publish to npm with provenance
+        env:
+          PACKAGE: ${{ steps.tarball.outputs.package }}
+          DIST_TAG: ${{ steps.tarball.outputs.dist-tag }}
+        run: |
+          published=$(npm view "$PACKAGE" dist.integrity 2>/dev/null || true)
+          if [ -n "$published" ]; then
+            if [ "$published" != "sha512-$(openssl dgst -sha512 -binary release/*.tgz | base64 -w0)" ]; then
+              echo "::error::npm already holds a different tarball for $PACKAGE. Nothing was published."
+              exit 1
+            fi
+            echo "::notice::$PACKAGE is already on npm with this tarball; not publishing it again."
+            exit 0
+          fi
+          flags=()
+          if [ "$DIST_TAG" != latest ]; then flags+=(--tag "$DIST_TAG"); fi
+          npm publish ./release/*.tgz --provenance --access public --ignore-scripts "${flags[@]}"
+
+      # The same tarball, mirrored to GitHub's own registry so the repository
+      # page lists it under Packages. GitHub ties a package to the account its
+      # scope names, and @pestoui is the organisation's own name, so the mirror
+      # keeps the npm name unchanged. The npm config names the token by
+      # reference, so its value is never written to disk, and it lives outside
+      # the package directory. A re-run passes over a version GitHub Packages
+      # already holds: this step only runs once npm holds this tarball, so
+      # whatever an earlier attempt mirrored came from it too.
+      - name: Mirror to GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ steps.tarball.outputs.package }}
+          DIST_TAG: ${{ steps.tarball.outputs.dist-tag }}
+        run: |
+          printf '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' > "$RUNNER_TEMP/github-packages.npmrc"
+          mirrored=$(npm view "$PACKAGE" version --registry https://npm.pkg.github.com \
+            --userconfig "$RUNNER_TEMP/github-packages.npmrc" 2>/dev/null || true)
+          if [ -n "$mirrored" ]; then
+            echo "::notice::$PACKAGE is already on GitHub Packages; not mirroring it again."
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/mirror"
+          tar -xzf release/*.tgz -C "$RUNNER_TEMP/mirror"
+          cd "$RUNNER_TEMP/mirror/package"
+          npm pkg set publishConfig.registry=https://npm.pkg.github.com
+          flags=()
+          if [ "$DIST_TAG" != latest ]; then flags+=(--tag "$DIST_TAG"); fi
+          npm publish --userconfig "$RUNNER_TEMP/github-packages.npmrc" --ignore-scripts "${flags[@]}"
+
+      # `gh` is preinstalled and authenticates with the job's own scoped token.
+      # --verify-tag refuses to invent a release for a tag that is not on the
+      # remote. A re-run leaves a release that already exists as it is.
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIST_TAG: ${{ steps.tarball.outputs.dist-tag }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::notice::The $GITHUB_REF_NAME release already exists; not creating it again."
+            exit 0
+          fi
+          flags=()
+          # Marked as a prerelease whenever npm did not get it as `latest`, so
+          # v0.2.0-rc.1 does not become "Latest" here either.
+          if [ "$DIST_TAG" != latest ]; then flags+=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release/.release-notes.md \
+            --verify-tag \
+            "${flags[@]}"

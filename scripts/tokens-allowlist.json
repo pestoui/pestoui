@@ -1,0 +1,1245 @@
+{
+  "$comment": "Ratchet for scripts/check-tokens.mjs. Each entry grandfathers `count` occurrences of an exact `match` for one `rule` in one `file`; `context` is `code` when the match is visible text inside a docs code sample. `label` names the phase that removes it and is free text. New occurrences fail; so do entries that cover more than exists. Shrink with `npm run tokens:check -- --prune`. Never add entries by hand to get a build through.",
+  "entries": [
+    {
+      "file": "packages/ui/src/components/activity-feed.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[11px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/agent-card.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[14px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/agent-card.tsx",
+      "rule": "radius-px",
+      "match": "rounded-t-[calc(var(--radius-xl)-1px)]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/agent-card.tsx",
+      "rule": "type-size",
+      "match": "text-[1.1875rem]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/agent-card.tsx",
+      "rule": "type-tracking",
+      "match": "tracking-[-0.012em]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/filter-bar.tsx",
+      "rule": "z-index",
+      "match": "z-20",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/icon-tile.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[12px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/icon-tile.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[14px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/icon-tile.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[16px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/icon-tile.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[19px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/inline-cta.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[13px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/inline-cta.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[9px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/message-bubble.tsx",
+      "rule": "radius-px",
+      "match": "[&>[data-side=incoming]:not(:last-child)_[data-slot=message-bubble-body]]:rounded-bl-[18px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/message-bubble.tsx",
+      "rule": "radius-px",
+      "match": "[&>[data-side=outgoing]:not(:last-child)_[data-slot=message-bubble-body]]:rounded-br-[18px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/message-bubble.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[18px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/message-bubble.tsx",
+      "rule": "radius-px",
+      "match": "rounded-bl-[6px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/message-bubble.tsx",
+      "rule": "radius-px",
+      "match": "rounded-br-[6px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/metric-card.tsx",
+      "rule": "type-leading",
+      "match": "leading-[1.1]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/metric-card.tsx",
+      "rule": "type-size",
+      "match": "text-[1.875rem]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/orb-avatar.tsx",
+      "rule": "color-hex",
+      "match": "#43C6C8",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/orb-avatar.tsx",
+      "rule": "color-hex",
+      "match": "#5B9DF7",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/orb-avatar.tsx",
+      "rule": "color-hex",
+      "match": "#7C5CF0",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/orb-avatar.tsx",
+      "rule": "color-hex",
+      "match": "#EF6FBE",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/orb-avatar.tsx",
+      "rule": "color-hex",
+      "match": "#F59A4B",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/orb-avatar.tsx",
+      "rule": "color-hex",
+      "match": "#fff",
+      "context": "source",
+      "count": 2,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/page-header.tsx",
+      "rule": "type-size",
+      "match": "text-[1.75rem]",
+      "context": "source",
+      "count": 1,
+      "label": "6d: composite"
+    },
+    {
+      "file": "packages/ui/src/components/section-header.tsx",
+      "rule": "type-size",
+      "match": "text-[1.1875rem]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/share-panel.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[13px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/share-panel.tsx",
+      "rule": "type-size",
+      "match": "text-[1.5rem]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/share-panel.tsx",
+      "rule": "type-tracking",
+      "match": "tracking-[-0.015em]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/ui/alert-dialog.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[13px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/alert-dialog.tsx",
+      "rule": "type-size",
+      "match": "text-[1.375rem]",
+      "context": "source",
+      "count": 1,
+      "label": "6d: composite"
+    },
+    {
+      "file": "packages/ui/src/components/ui/alert-dialog.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/avatar.tsx",
+      "rule": "z-index",
+      "match": "z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/banner.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[9px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/button-group.tsx",
+      "rule": "z-index",
+      "match": "[&>*]:focus-visible:z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/button-group.tsx",
+      "rule": "z-index",
+      "match": "[&>*]:hover:z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/button.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[11px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/button.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[13px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/button.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[15px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/calendar.tsx",
+      "rule": "type-size",
+      "match": "text-[0.8rem]",
+      "context": "source",
+      "count": 2,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/ui/calendar.tsx",
+      "rule": "z-index",
+      "match": "group-data-[focused=true]/day:z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/calendar.tsx",
+      "rule": "z-index",
+      "match": "z-0",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/calendar.tsx",
+      "rule": "z-index",
+      "match": "z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/chart.tsx",
+      "rule": "color-hex",
+      "match": "#ccc",
+      "context": "source",
+      "count": 3,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/chart.tsx",
+      "rule": "color-hex",
+      "match": "#fff",
+      "context": "source",
+      "count": 2,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/chart.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[12px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/chart.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[2px]",
+      "context": "source",
+      "count": 2,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/checkbox.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[6px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#000000",
+      "context": "source",
+      "count": 2,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#14b8a6",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#16a34a",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#1c1917",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#3b82f6",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#78716c",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#8b5cf6",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#d6d3d1",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#dc2626",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#ec4899",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#f59e0b",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#f97316",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "color-hex",
+      "match": "#ffffff",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[size=lg]/color-swatch:rounded-[17px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[size=sm]/color-swatch:rounded-[11px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[11px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[14px]",
+      "context": "source",
+      "count": 3,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/color-picker.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[9px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/command.tsx",
+      "rule": "radius-px",
+      "match": "in-data-[slot=dialog-content]:rounded-[10px]!",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/command.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[10px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/command.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[12px]!",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/context-menu.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[10px]",
+      "context": "source",
+      "count": 2,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/context-menu.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[14px]",
+      "context": "source",
+      "count": 2,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/context-menu.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/dialog.tsx",
+      "rule": "type-size",
+      "match": "text-[1.375rem]",
+      "context": "source",
+      "count": 1,
+      "label": "6d: composite"
+    },
+    {
+      "file": "packages/ui/src/components/ui/dialog.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/drawer.tsx",
+      "rule": "type-tracking",
+      "match": "tracking-[-0.015em]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/ui/drawer.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/dropdown-menu.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[10px]",
+      "context": "source",
+      "count": 2,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/dropdown-menu.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[14px]",
+      "context": "source",
+      "count": 2,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/dropdown-menu.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/empty-state.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[size=sm]/empty-state:rounded-[12px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/empty-state.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[16px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/file-upload.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[size=lg]/file-upload:rounded-[16px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/file-upload.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[size=sm]/file-upload:rounded-[12px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/file-upload.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[12px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/file-upload.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[14px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/file-upload.tsx",
+      "rule": "type-tracking",
+      "match": "tracking-[0.02em]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/ui/hover-card.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[18px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/hover-card.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/input-group.tsx",
+      "rule": "radius-px",
+      "match": "[&>kbd]:rounded-[calc(var(--radius)-5px)]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/input-group.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[calc(var(--radius)-3px)]",
+      "context": "source",
+      "count": 2,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/input-otp.tsx",
+      "rule": "radius-px",
+      "match": "first:rounded-l-[12px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/input-otp.tsx",
+      "rule": "radius-px",
+      "match": "last:rounded-r-[12px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/input-otp.tsx",
+      "rule": "z-index",
+      "match": "data-[active=true]:z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/kbd.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[5px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/kbd.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[6px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/kbd.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[7px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/menubar.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[10px]",
+      "context": "source",
+      "count": 5,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/menubar.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[14px]",
+      "context": "source",
+      "count": 2,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/menubar.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/multi-select.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[size=sm]/multi-select:rounded-[6px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/multi-select.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[18px]!",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/multi-select.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[7px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/multi-select.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[min(var(--radius-md),12px)]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/navigation-menu.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[viewport=false]/navigation-menu:rounded-[16px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/navigation-menu.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[10px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/navigation-menu.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[16px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/navigation-menu.tsx",
+      "rule": "z-index",
+      "match": "z-1",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/navigation-menu.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/popover.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[18px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/popover.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/progress-circle.tsx",
+      "rule": "type-style-key",
+      "match": "fontSize: geometry.font",
+      "context": "source",
+      "count": 2,
+      "label": "6: style prop"
+    },
+    {
+      "file": "packages/ui/src/components/ui/rating.tsx",
+      "rule": "radius-px",
+      "match": "*:data-[slot=rating-star]:rounded-[10px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/rating.tsx",
+      "rule": "radius-px",
+      "match": "*:data-[slot=rating-star]:rounded-[7px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/rating.tsx",
+      "rule": "radius-px",
+      "match": "*:data-[slot=rating-star]:rounded-[8px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/rating.tsx",
+      "rule": "z-index",
+      "match": "focus-visible:z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/resizable.tsx",
+      "rule": "z-index",
+      "match": "z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/select.tsx",
+      "rule": "radius-px",
+      "match": "data-[size=sm]:rounded-[min(var(--radius-md),12px)]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/select.tsx",
+      "rule": "z-index",
+      "match": "z-10",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/select.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/sheet.tsx",
+      "rule": "type-tracking",
+      "match": "tracking-[-0.015em]",
+      "context": "source",
+      "count": 1,
+      "label": "6: snap"
+    },
+    {
+      "file": "packages/ui/src/components/ui/sheet.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/sidebar.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[10px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/sidebar.tsx",
+      "rule": "z-index",
+      "match": "z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/sidebar.tsx",
+      "rule": "z-index",
+      "match": "z-20",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/table-card.tsx",
+      "rule": "z-index",
+      "match": "z-[var(--z-sticky,1)]",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/table.tsx",
+      "rule": "z-index",
+      "match": "z-[var(--z-sticky,1)]",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tabs.tsx",
+      "rule": "z-index",
+      "match": "z-0",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tabs.tsx",
+      "rule": "z-index",
+      "match": "z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tag.tsx",
+      "rule": "radius-px",
+      "match": "group-data-[size=sm]/tag:rounded-[6px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tag.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[7px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/toggle-group.tsx",
+      "rule": "radius-px",
+      "match": "data-[size=sm]:rounded-[9px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/toggle-group.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[11px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/toggle-group.tsx",
+      "rule": "z-index",
+      "match": "focus-visible:z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/toggle-group.tsx",
+      "rule": "z-index",
+      "match": "focus:z-10",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/toggle.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[11px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/toggle.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[13px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/toggle.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[9px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tooltip.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[2px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tooltip.tsx",
+      "rule": "z-index",
+      "match": "**:data-[slot=kbd]:z-50",
+      "context": "source",
+      "count": 1,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tooltip.tsx",
+      "rule": "z-index",
+      "match": "z-50",
+      "context": "source",
+      "count": 2,
+      "label": "1b: z-index"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tree-view.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[10px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/components/ui/tree-view.tsx",
+      "rule": "radius-px",
+      "match": "rounded-[9px]",
+      "context": "source",
+      "count": 1,
+      "label": "1c: radius"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/build.ts",
+      "rule": "color-hex",
+      "match": "#EFF0ED",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/build.ts",
+      "rule": "color-hex",
+      "match": "#F9FAF7",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/build.ts",
+      "rule": "color-hex",
+      "match": "#FEFFFC",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/build.ts",
+      "rule": "color-oklch",
+      "match": "oklch(<L> <C> var(--brand-hue))",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/build.ts",
+      "rule": "color-oklch",
+      "match": "oklch(1 0 0 / 8%)",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/color.ts",
+      "rule": "color-hex",
+      "match": "#aabbcc",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/color.ts",
+      "rule": "color-hex",
+      "match": "#aabbccff",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/color.ts",
+      "rule": "color-hex",
+      "match": "#abc",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/color.ts",
+      "rule": "color-oklch",
+      "match": "oklch(${n(l, 4)} ${n(c, 4)} ${n(h, 2)})",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/derive.ts",
+      "rule": "color-hex",
+      "match": "#101010",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/derive.ts",
+      "rule": "color-hex",
+      "match": "#D1F826",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    },
+    {
+      "file": "packages/ui/src/lib/theme/derive.ts",
+      "rule": "color-hex",
+      "match": "#EEEEEE",
+      "context": "source",
+      "count": 1,
+      "label": "1a: primitives"
+    }
+  ]
+}

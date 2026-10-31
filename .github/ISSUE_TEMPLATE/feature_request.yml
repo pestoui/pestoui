@@ -1,0 +1,44 @@
+name: Feature or component request
+description: Propose a new component, a new variant, or a change in direction.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Before filing: **[CONTRIBUTING.md](../blob/main/CONTRIBUTING.md)** records
+        the rules and conventions already decided, with the reasoning. If your
+        request contradicts one of them, that is fine — but say which, so the
+        conversation starts in the right place.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to build that the system does not let you build?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: A rough API sketch is more useful than a paragraph.
+      render: tsx
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: >
+        Composing existing components, overriding with `className`, copying the
+        source. Knowing what failed says a lot about what the right fix is.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Where it belongs
+      options:
+        - A new primitive in packages/ui
+        - A new application component in packages/ui
+        - A variant or prop on something that exists
+        - Not sure

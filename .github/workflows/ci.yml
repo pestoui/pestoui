@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+# A new push to a PR makes the in-flight run pointless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Nothing here writes to the repository, so the job token can only read it.
+permissions:
+  contents: read
+
+# Every action is pinned to a full commit SHA, with its tag in a comment: a tag can
+# be moved to different code, a commit cannot. Renovate keeps the pins current.
+jobs:
+  verify:
+    name: Gates, lint, typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Full history: the allowlist ratchet below reads the base branch's copy.
+      # persist-credentials: false keeps the job token out of .git/config, where
+      # every later step, dependency code included, could otherwise read it.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # --ignore-scripts: no dependency runs code at install time. Nothing this
+      # repository builds needs an install script.
+      - run: npm ci --ignore-scripts
+
+      # One identity only. Fails if a commit was authored or committed under any
+      # other identity, or if a tracked file or commit message matches the
+      # private blocklist held in the FORBIDDEN_NAMES secret. A build gate
+      # rather than a review convention, because a name in history is expensive
+      # to take back out.
+      - name: Check commit identity and blocked names
+        env:
+          FORBIDDEN_NAMES: ${{ secrets.FORBIDDEN_NAMES }}
+        run: npm run check:names -- --require-list
+
+      # A committed key is leaked the moment it is pushed. Reports the file and
+      # line, never the value.
+      - name: Check for committed credentials
+        run: npm run check:secrets
+
+      # The scanner against fixtures it must catch and fixtures it must pass.
+      - name: Test the credential scanner
+        run: npm run test:secrets
+
+      # Demo content uses plain labels and example.com. Fictional companies and
+      # third-party brands as demo data kept returning until this became a gate.
+      - name: Check placeholder content
+        run: npm run check:placeholders
+
+      # A ratchet over raw design values (type escapes, oklch, hex, px radii,
+      # numeric z-index) and over merger bypasses: an occurrence the allowlist
+      # does not cover fails, and so does an entry whose occurrence has gone.
+      - name: Check raw values against the token allowlist
+        run: npm run tokens:check
+
+      # The allowlist only shrinks: an entry the base branch does not have, or a
+      # higher count than it, fails. A base without an allowlist passes.
+      - name: Check the token allowlist did not grow
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/check-tokens.mjs --base "origin/$BASE_REF"
+
+      # cn() registers the type-scale tokens with tailwind-merge. Unregistered, a
+      # text-<token> merges as a colour and drops sizes; this replays every class
+      # string in the repo to prove a token merges exactly as the arbitrary class
+      # it replaces.
+      - name: Test the type-scale merge registration
+        run: npm run test:merge
+
+      # ChartStyle writes caller-supplied values into a <style> element; this
+      # proves the values are checked before they get there.
+      - name: Test the chart style guard
+        run: npm run test:chart
+
+      - name: Check published legal files match their source
+        run: npm run check:notices
+
+      - name: Check the barrels match their sources
+        run: npm run check:barrel
+
+      # The shadcn stylesheet is vendored; an upstream change must be re-copied on
+      # purpose, not drift in silently.
+      - name: Check the vendored shadcn stylesheet matches upstream
+        run: npm run check:shadcn-css
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # The design system ships source rather than compiled output, so the only
+      # honest test of the exports map is a consumer resolving through it.
+      - name: Resolve every published entry point
+        run: npm run check:exports
