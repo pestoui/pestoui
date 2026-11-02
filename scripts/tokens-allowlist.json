@@ -154,54 +154,6 @@
       "label": "6: snap"
     },
     {
-      "file": "packages/ui/src/components/orb-avatar.tsx",
-      "rule": "color-hex",
-      "match": "#43C6C8",
-      "context": "source",
-      "count": 1,
-      "label": "1a: primitives"
-    },
-    {
-      "file": "packages/ui/src/components/orb-avatar.tsx",
-      "rule": "color-hex",
-      "match": "#5B9DF7",
-      "context": "source",
-      "count": 1,
-      "label": "1a: primitives"
-    },
-    {
-      "file": "packages/ui/src/components/orb-avatar.tsx",
-      "rule": "color-hex",
-      "match": "#7C5CF0",
-      "context": "source",
-      "count": 1,
-      "label": "1a: primitives"
-    },
-    {
-      "file": "packages/ui/src/components/orb-avatar.tsx",
-      "rule": "color-hex",
-      "match": "#EF6FBE",
-      "context": "source",
-      "count": 1,
-      "label": "1a: primitives"
-    },
-    {
-      "file": "packages/ui/src/components/orb-avatar.tsx",
-      "rule": "color-hex",
-      "match": "#F59A4B",
-      "context": "source",
-      "count": 1,
-      "label": "1a: primitives"
-    },
-    {
-      "file": "packages/ui/src/components/orb-avatar.tsx",
-      "rule": "color-hex",
-      "match": "#fff",
-      "context": "source",
-      "count": 2,
-      "label": "1a: primitives"
-    },
-    {
       "file": "packages/ui/src/components/page-header.tsx",
       "rule": "type-size",
       "match": "text-[1.75rem]",

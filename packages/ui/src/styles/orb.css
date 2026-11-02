@@ -1,0 +1,43 @@
+/* The colours of the OrbAvatar discs: for each hue a flat base, its ellipses in the
+   order they are drawn, and a pale rim. Plain :root primitives, so they make no
+   utilities and nothing else can reach for them. There is no dark set, because a
+   disc is the same picture in both themes.
+
+   The values are not brand colours. They were fitted, together with the geometry
+   in components/orb-avatar.tsx, so that the browser's own blending draws the disc,
+   which means the two have to change together. */
+:root {
+  --orb-violet-base: #efc8fb;
+  --orb-violet-1: #864eff;
+  --orb-violet-2: #a27aff;
+  --orb-violet-3: #ffebfd;
+  --orb-violet-4: #ff6fc5;
+  --orb-violet-rim: #fdeef8;
+
+  --orb-pink-base: #ffcee8;
+  --orb-pink-1: #ff65b8;
+  --orb-pink-2: #e8a9f7;
+  --orb-pink-3: #fff7fc;
+  --orb-pink-4: #ff7f7b;
+  --orb-pink-rim: #fdeef8;
+
+  --orb-orange-base: #ffa595;
+  --orb-orange-1: #ff8823;
+  --orb-orange-2: #ffead7;
+  --orb-orange-3: #fe0011;
+  --orb-orange-rim: #ffd8ea;
+
+  --orb-blue-base: #a0d4ff;
+  --orb-blue-1: #247dff;
+  --orb-blue-2: #fdffff;
+  --orb-blue-3: #2ab5f7;
+  --orb-blue-4: #c3c3ff;
+  --orb-blue-rim: #ecf4fd;
+
+  --orb-teal-base: #aae6db;
+  --orb-teal-1: #00d8c0;
+  --orb-teal-2: #18b0ff;
+  --orb-teal-3: #00b878;
+  --orb-teal-4: #e4f6ea;
+  --orb-teal-rim: #e0f4ea;
+}

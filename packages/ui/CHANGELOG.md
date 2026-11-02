@@ -120,6 +120,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `ContextMenuContent` is capped at the width the viewport has left
   (`max-w-(--radix-context-menu-content-available-width)`). On a phone a wide
   menu opened from the middle of its target used to run past the screen edge.
+- `OrbAvatar` draws a soft disc of blended colour instead of four wedges of one
+  hue. `hue` keeps its five values, and `OrbStack` its props. It is inline SVG
+  with no canvas, filter or image, so it renders on the server and draws under a
+  strict CSP. Its colours are `--orb-*` properties in `src/styles/orb.css`, which
+  a copied component needs too. The white backing is gone, so a disc is the same
+  picture in light and dark.
+- `SidebarMenuButton` leaves alone an svg that sets its own `size-*`, the rule
+  `Button` and `CommandItem` already follow. An `OrbAvatar` in `SidebarUser` used
+  to be forced down to 16px.
 
 ### Fixed
 

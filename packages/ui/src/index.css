@@ -4,6 +4,7 @@
 @import "@fontsource-variable/geist/wght.css";
 @import "@fontsource-variable/geist-mono/wght.css";
 @import "./styles/motion.css";
+@import "./styles/orb.css";
 
 /* Tailwind's automatic content detection is rooted at the consuming app and
    never walks into node_modules, so a package that ships source has to name its

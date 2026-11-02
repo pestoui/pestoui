@@ -328,7 +328,8 @@ The components are also meant to be _owned_. `components.json` is a shadcn
 config, and the source under `src/components/` is deliberately free of
 documentation and demo scaffolding so a file survives being pasted into your
 project. Internal imports are relative (`../../lib/utils`), so a copied file
-needs its `cn` import repointed at wherever your own `cn` lives.
+needs its `cn` import repointed at wherever your own `cn` lives. `OrbAvatar` also
+reads its colours from `src/styles/orb.css`, so take that file with it.
 
 ## Why the shadcn stylesheet is copied in
 

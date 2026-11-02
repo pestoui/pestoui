@@ -38,7 +38,7 @@ Authored in OKLCH for perceptually even steps; hex shown for reference.
 | `--warning` | `#F59E0B` | warning |
 | `--destructive` | `#DC2626` | danger, delete |
 
-### Identity (chart / orb hues)
+### Identity (chart hues)
 | Token | Hex | Name |
 | --- | --- | --- |
 | `--chart-1` | `#8B5CF6` | violet |
@@ -48,6 +48,10 @@ Authored in OKLCH for perceptually even steps; hex shown for reference.
 | `--chart-5` | `#2DD4BF` | teal |
 
 Every semantic and identity colour has a matching `-foreground` for text/icons placed on it.
+
+`OrbAvatar` draws from its own primitives, `--orb-<hue>-*` in
+[`packages/ui/src/styles/orb.css`](../packages/ui/src/styles/orb.css): the same five hue
+names, and the same picture in both themes.
 
 ## Radius
 
